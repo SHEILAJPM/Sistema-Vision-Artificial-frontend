@@ -4,6 +4,7 @@ import { Eye, EyeOff, ScanEye, TriangleAlert, LogIn } from "lucide-react";
 import { Button } from "../components/ui/Button.jsx";
 import { useAuth } from "../context/AuthProvider.jsx";
 import { USE_MOCK_DATA } from "../lib/api.js";
+import harvestPhoto from "../assets/cosecha-limones-piura.jpg";
 
 const inputClass =
   "focus-ring w-full rounded-lg border border-line bg-canvas px-3.5 py-2.5 text-sm text-ink placeholder:text-ink-faint";
@@ -32,26 +33,40 @@ export default function LoginPage() {
 
   return (
     <div className="flex min-h-screen bg-canvas">
-      {/* Panel de marca -- solo en pantallas medianas en adelante */}
-      <div className="hidden lg:flex w-1/2 flex-col justify-between bg-blue-50 px-14 py-12">
-        <div className="flex items-center gap-2.5">
-          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-blue-500 text-white">
+      {/* Panel de marca -- solo en pantallas medianas en adelante. La foto es
+          la cosecha real que este sistema termina inspeccionando en la linea. */}
+      <div className="hidden lg:flex relative w-1/2 flex-col justify-between overflow-hidden px-14 py-12">
+        <img
+          src={harvestPhoto}
+          alt=""
+          className="absolute inset-0 h-full w-full object-cover"
+        />
+        <div
+          className="absolute inset-0"
+          style={{
+            background:
+              "linear-gradient(180deg, rgba(23,63,110,0.85) 0%, rgba(23,63,110,0.32) 45%, rgba(23,63,110,0.88) 100%)",
+          }}
+        />
+
+        <div className="relative flex items-center gap-2.5">
+          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-white text-blue-600">
             <ScanEye size={18} strokeWidth={2} />
           </div>
-          <p className="text-sm font-semibold text-ink">InspectaLine</p>
+          <p className="text-sm font-semibold text-white">InspectaLine</p>
         </div>
 
-        <div className="max-w-sm">
-          <p className="text-2xl font-semibold text-ink leading-snug">
+        <div className="relative max-w-sm">
+          <p className="text-2xl font-semibold text-white leading-snug">
             Monitoreo y control de la linea de inspeccion visual.
           </p>
-          <p className="text-sm text-ink-soft mt-3 leading-relaxed">
+          <p className="text-sm text-blue-50/90 mt-3 leading-relaxed">
             Banda transportadora, iluminacion, servo de rechazo y deteccion de defectos
-            con YOLOv8, en un solo panel.
+            con YOLOv8, en un solo panel — de la cosecha en Piura a la linea de empaque.
           </p>
         </div>
 
-        <p className="text-xs text-ink-faint">Acceso restringido a personal autorizado de planta</p>
+        <p className="relative text-xs text-blue-50/70">Acceso restringido a personal autorizado de planta</p>
       </div>
 
       {/* Formulario */}
