@@ -42,7 +42,33 @@ npm run lint       # eslint
 
 Ver `.env.example` para la plantilla completa.
 
-## 3. Tiempo real: WebSocket + polling de respaldo — por que ambos
+## 3. Autenticacion
+
+Toda la app (menos `/login`) esta detras de un login (`src/context/AuthProvider.jsx`):
+
+- Al enviar el formulario se llama `POST /api/auth/login` con `{ username, password }`;
+  el backend responde `{ token, user: { name, role } }`. El token se guarda en
+  `localStorage` (`inspectaline_token`) y se manda como `Authorization: Bearer <token>`
+  en cada request REST (`src/lib/api.js`).
+- El WebSocket no soporta headers custom desde el navegador, asi que el mismo token va
+  como query param: `VITE_WS_URL?token=...` — el backend debe leerlo de ahi.
+- Al recargar la pagina, si hay un token guardado se valida con `GET /api/auth/me` antes
+  de mostrar el dashboard (pantalla de "Verificando sesion..." mientras tanto). Si el
+  token ya no es valido, se limpia y se manda a `/login`.
+- Si **cualquier** request REST responde `401` a mitad de sesion (token vencido o
+  revocado), se cierra sesion automaticamente y se vuelve a `/login` — no hay que
+  esperar a la siguiente recarga para notarlo.
+- Rutas protegidas: `src/components/auth/RequireAuth.jsx` es una layout route que
+  redirige a `/login` si no hay sesion, recordando la pagina de origen para volver ahi
+  despues de iniciar sesion. `SystemProvider` (WS + polling + `/api/status`, etc.) se
+  monta solo dentro del arbol autenticado, asi que `/login` nunca dispara esas llamadas.
+- El boton de "Cerrar sesion" (pie del sidebar) llama `POST /api/auth/logout` (best
+  effort) y limpia el token local.
+- **Modo demo** (`VITE_USE_MOCK_DATA=true`): el login no llama al backend, acepta
+  cualquier usuario/contrasena no vacios y crea una sesion falsa en `localStorage` para
+  poder navegar todo el panel sin tener `/api/auth/*` implementado todavia.
+
+## 4. Tiempo real: WebSocket + polling de respaldo — por que ambos
 
 El dashboard **usa WebSocket como canal principal** (`src/lib/useWebSocket.js`,
 consumido desde `src/context/SystemProvider.jsx`) porque el feed de detecciones y los
@@ -73,12 +99,15 @@ patron mas simple y liviano de servir desde Flask/FastAPI + OpenCV, el navegador
 decodifica de forma nativa (sin JS extra) y no compite por el mismo socket que el
 estado/los eventos.
 
-## 4. Contrato con el backend
+## 5. Contrato con el backend
 
 ### REST
 
 | Metodo | Endpoint | Descripcion |
 |---|---|---|
+| `POST` | `/api/auth/login` | body `{ username, password }` → `{ token, user: { name, role } }` |
+| `GET` | `/api/auth/me` | Valida el token guardado → `{ name, role }` (401 si vencio) |
+| `POST` | `/api/auth/logout` | Invalida el token en el backend (best effort) |
 | `GET` | `/api/status` | `{ banda, luz, arduino, backend, serialPort, baudrate }` |
 | `POST` | `/api/control` | body `{ command }`, `command` ∈ `START`, `STOP`, `LIGHT_ON`, `LIGHT_OFF`, `TEST_SERVO`, `RECONNECT_ARDUINO` |
 | `GET` | `/api/stats` | `{ today: { inspected, rejected, rejectRate }, trend: [...], distribution: { ok, defectuosas } }` |
@@ -87,10 +116,14 @@ estado/los eventos.
 | `POST` | `/api/settings` | body: subconjunto de lo anterior a actualizar |
 | `GET` | `/api/video_feed` | Stream MJPEG (`multipart/x-mixed-replace`) usado directo como `src` de un `<img>` |
 
-`/api/settings` no estaba en la lista original del pedido pero es necesario para que
-la pantalla de Configuracion (velocidad de banda, umbral de confianza, camara, puerto
-serial/baudrate) lea y guarde valores reales; si el backend aun no lo expone, el panel
-sigue funcionando igual con `VITE_USE_MOCK_DATA=true`.
+`/api/settings` y `/api/auth/*` no estaban en la lista original del pedido. `/api/settings`
+es necesario para que la pantalla de Configuracion (velocidad de banda, umbral de
+confianza, camara, puerto serial/baudrate) lea y guarde valores reales; `/api/auth/*` es
+lo que pide el login agregado despues (ver seccion 3). Si el backend aun no expone
+alguno de estos, el panel sigue funcionando igual con `VITE_USE_MOCK_DATA=true`.
+
+Todos los endpoints salvo `/api/auth/login` esperan el header
+`Authorization: Bearer <token>` una vez el usuario inicio sesion.
 
 ### WebSocket (`VITE_WS_URL`)
 
@@ -116,23 +149,27 @@ pantalla) — el frontend escala las cajas al tamano real renderizado del `<img>
 Si el backend todavia no tiene estos mensajes, el panel sigue funcionando con
 polling REST puro (sin cajas de deteccion en vivo, ya que esas si dependen del WS).
 
-## 5. Estructura del proyecto
+## 6. Estructura del proyecto
 
 ```
 src/
-  main.jsx                  Entry point (Router + SystemProvider)
-  App.jsx                   Rutas
+  main.jsx                  Entry point (Router + AuthProvider)
+  App.jsx                   Rutas (publica /login + arbol protegido con SystemProvider)
   index.css                 Tokens Tailwind base + utilidades globales
   lib/
-    api.js                  Cliente REST (fetch centralizado)
+    api.js                  Cliente REST (fetch centralizado, token, endpoints de auth)
     useWebSocket.js          Hook de WebSocket con reconexion exponencial
   context/
+    AuthProvider.jsx         Sesion: token, usuario, login/logout, 401 -> logout automatico
     SystemProvider.jsx       Estado global: status, stats, events, settings, detections
   data/
     mockData.js               Datos de ejemplo (VITE_USE_MOCK_DATA=true)
   components/
+    auth/
+      RequireAuth.jsx         Layout route que redirige a /login si no hay sesion
+      SplashScreen.jsx         Pantalla breve mientras se valida el token guardado
     layout/
-      Sidebar.jsx             Navegacion lateral
+      Sidebar.jsx             Navegacion lateral + tarjeta de usuario/logout
       AppShell.jsx             Layout comun (sidebar + banner + header + contenido)
       ConnectionBanner.jsx     Banner de advertencia (backend/Arduino desconectado)
     ui/
@@ -148,10 +185,10 @@ src/
     settings/
       SettingsPanel.jsx        PWM, umbral de confianza, camara, puerto serial/baudrate
   pages/
-    OverviewPage.jsx, HistoryPage.jsx, RejectedPage.jsx, SettingsPage.jsx, HelpPage.jsx
+    LoginPage.jsx, OverviewPage.jsx, HistoryPage.jsx, RejectedPage.jsx, SettingsPage.jsx, HelpPage.jsx
 ```
 
-## 6. Guia de estilo aplicada
+## 7. Guia de estilo aplicada
 
 - Fondo `#FFFFFF` puro, paneles en gris calido muy suave (`#F7F7F4`), sin negros ni
   fondos oscuros en ningun componente (no hay modo oscuro implementado).
@@ -174,7 +211,7 @@ src/
   (`.tnum`, `font-variant-numeric: tabular-nums`), cargadas desde Google Fonts en
   `index.html`.
 
-## 7. Responsive
+## 8. Responsive
 
 - **Escritorio (≥1024px, `lg`)**: sidebar completo con etiquetas, grillas de 3–4
   columnas en KPIs y graficos — layout principal, el que se probo con mas detalle.
@@ -184,10 +221,15 @@ src/
   marca el escritorio como uso principal y la tablet como el limite de adaptacion
   razonable, asi que no se invirtio en un layout movil completo.
 
-## 8. Como se ve cada seccion
+## 9. Como se ve cada seccion
 
 Capturas tomadas en modo demo (`VITE_USE_MOCK_DATA=true`) a 1440px de ancho.
 
+- **Login**: pantalla partida en dos en escritorio — panel izquierdo con fondo azul
+  muy suave, logo y una linea de contexto del sistema; panel derecho blanco con el
+  formulario (usuario, contrasena con boton de mostrar/ocultar, banner de error en
+  coral suave si falla, aviso de "modo demo" cuando `VITE_USE_MOCK_DATA=true`). En
+  pantallas chicas colapsa a una sola columna centrada.
 - **Resumen en vivo**: fila de 4 KPI cards (banda/luz con boton de accion inline,
   inspeccionadas y rechazadas con badge de porcentaje) → feed de camara con cajas de
   deteccion superpuestas + panel de control manual a la derecha → grafico de tendencia
@@ -210,5 +252,6 @@ Capturas tomadas en modo demo (`VITE_USE_MOCK_DATA=true`) a 1440px de ancho.
   datos obsoletos o romper la UI.
 
 Todas las paginas y el banner se verificaron renderizando la app real con Playwright
-(sin errores de consola) en tres estados: datos de ejemplo, ancho de tablet, y backend
-inalcanzable.
+(sin errores de consola) en varios estados: datos de ejemplo, ancho de tablet, backend
+inalcanzable, y el flujo completo de login → sesion persistida tras recargar → logout →
+intento de visitar una ruta protegida sin sesion (rebota a `/login`).
