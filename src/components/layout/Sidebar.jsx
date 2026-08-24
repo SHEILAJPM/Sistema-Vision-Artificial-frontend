@@ -1,6 +1,7 @@
-import { NavLink } from "react-router-dom";
-import { LayoutGrid, History, PackageX, SlidersHorizontal, CircleHelp, ScanEye } from "lucide-react";
+import { NavLink, useNavigate } from "react-router-dom";
+import { LayoutGrid, History, PackageX, SlidersHorizontal, CircleHelp, ScanEye, LogOut } from "lucide-react";
 import { useSystem } from "../../context/SystemProvider.jsx";
+import { useAuth } from "../../context/AuthProvider.jsx";
 import { StatDot } from "../ui/StatDot.jsx";
 
 const NAV_ITEMS = [
@@ -11,11 +12,24 @@ const NAV_ITEMS = [
   { to: "/ayuda", label: "Ayuda", icon: CircleHelp },
 ];
 
+function initialsOf(name = "") {
+  const parts = name.trim().split(/\s+/).filter(Boolean);
+  if (!parts.length) return "?";
+  return (parts[0][0] + (parts[1]?.[0] ?? "")).toUpperCase();
+}
+
 // Escritorio (lg+): rail completo con etiquetas. Tablet (sm-lg): rail de solo
 // iconos para no robar ancho al contenido. Telefonos (<sm): oculto -- el uso
 // principal de este panel es de escritorio, segun el requisito de diseno.
 export function Sidebar() {
   const { connectionOk } = useSystem();
+  const { user, logout } = useAuth();
+  const navigate = useNavigate();
+
+  const handleLogout = async () => {
+    await logout();
+    navigate("/login", { replace: true });
+  };
 
   return (
     <aside className="hidden sm:flex w-16 lg:w-64 shrink-0 flex-col border-r border-line bg-panel px-2 lg:px-4 py-6 transition-[width] duration-150">
@@ -50,12 +64,30 @@ export function Sidebar() {
         ))}
       </nav>
 
-      <div className="mt-6 flex justify-center rounded-xl border border-line bg-canvas px-3 py-3 lg:justify-start">
+      <div className="mt-3 flex justify-center rounded-xl border border-line bg-canvas px-3 py-3 lg:justify-start">
         <StatDot
           tone={connectionOk ? "ok" : "rejected"}
           pulse={connectionOk}
           label={<span className="hidden lg:inline">{connectionOk ? "Backend conectado" : "Backend sin respuesta"}</span>}
         />
+      </div>
+
+      <div className="mt-2 flex items-center gap-2.5 rounded-xl border border-line bg-canvas px-3 py-2.5">
+        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-beige-100 text-xs font-semibold text-beige-600">
+          {initialsOf(user?.name)}
+        </div>
+        <div className="hidden lg:block min-w-0 flex-1">
+          <p className="truncate text-xs font-medium text-ink">{user?.name ?? "Usuario"}</p>
+          <p className="truncate text-[11px] text-ink-faint">{user?.role ?? "Operador"}</p>
+        </div>
+        <button
+          type="button"
+          onClick={handleLogout}
+          title="Cerrar sesion"
+          className="focus-ring shrink-0 rounded-lg p-1.5 text-ink-faint hover:bg-panel-alt hover:text-coral-500"
+        >
+          <LogOut size={15} strokeWidth={2} />
+        </button>
       </div>
     </aside>
   );
