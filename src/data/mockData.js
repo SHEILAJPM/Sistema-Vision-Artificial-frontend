@@ -1,5 +1,5 @@
 // Datos de ejemplo usados solo cuando VITE_USE_MOCK_DATA=true, para poder
-// revisar el diseno del dashboard sin backend/Arduino conectados.
+// revisar el diseño del dashboard sin backend/Arduino conectados.
 
 export const mockStatus = {
   banda: "running", // "running" | "stopped"
@@ -17,7 +17,7 @@ export const mockTrend = hours.map((hour, i) => ({
   rechazadas: [3, 5, 4, 7, 3, 6, 5, 2][i],
 }));
 
-export const mockDistribution = { ok: 812, defectuosas: 63 };
+export const mockDistribution = { ok: 812, defectuosos: 63 };
 
 export const mockStats = {
   today: {
@@ -37,7 +37,7 @@ export const mockEvents = Array.from({ length: 14 }).map((_, i) => {
     id: `EVT-${1000 + i}`,
     timestamp: d.toISOString(),
     result: isRejected ? "rejected" : "ok",
-    action: isRejected ? "Servo activado" : "Sin accion",
+    action: isRejected ? "Servo activado" : "Sin acción",
     confidence: isRejected ? 0.88 + (i % 3) * 0.02 : 0.95 + (i % 4) * 0.01,
     thumbnail: null,
   };
@@ -57,11 +57,34 @@ export const mockSettings = {
   confidenceThreshold: 0.75,
   camera: "cam0",
   cameras: [
-    { id: "cam0", label: "Camara 1 - Zona de inspeccion" },
-    { id: "cam1", label: "Camara 2 - Salida de banda" },
+    { id: "cam0", label: "Cámara 1 - Zona de inspección" },
+    { id: "cam1", label: "Cámara 2 - Salida de banda" },
   ],
   serialPort: "COM4",
   baudrate: 115200,
   ports: ["COM3", "COM4", "COM5"],
   baudrates: [9600, 19200, 38400, 57600, 115200],
+};
+
+export const mockModelStatus = {
+  seleccion_activa: "ambos",
+  modelo_decision: "A",
+  modelo_a_cargado: true,
+  modelo_b_cargado: true,
+  modo_respaldo_heuristico: false,
+  errores_carga: {},
+};
+
+export const mockModelComparison = {
+  por_modelo: {
+    A: { inspecciones: 428, confianza_promedio: 0.93, latencia_promedio_ms: 38, defectuosos_detectados: 31 },
+    B: { inspecciones: 428, confianza_promedio: 0.89, latencia_promedio_ms: 21, defectuosos_detectados: 27 },
+  },
+  comparacion_directa: {
+    piezas_evaluadas_por_ambos: 428,
+    coincidencias: 401,
+    discrepancias: 27,
+    porcentaje_acuerdo: 93.7,
+  },
+  modelo_activo: "ambos",
 };

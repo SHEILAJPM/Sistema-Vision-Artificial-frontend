@@ -1,5 +1,5 @@
 import { NavLink, useNavigate } from "react-router-dom";
-import { LayoutGrid, History, PackageX, SlidersHorizontal, CircleHelp, ScanEye, LogOut } from "lucide-react";
+import { LayoutGrid, History, PackageX, Cpu, SlidersHorizontal, CircleHelp, ScanEye, LogOut } from "lucide-react";
 import { useSystem } from "../../context/SystemProvider.jsx";
 import { useAuth } from "../../context/AuthProvider.jsx";
 import { StatDot } from "../ui/StatDot.jsx";
@@ -7,8 +7,9 @@ import { StatDot } from "../ui/StatDot.jsx";
 const NAV_ITEMS = [
   { to: "/", label: "Resumen en vivo", icon: LayoutGrid, end: true },
   { to: "/historial", label: "Historial de inspecciones", icon: History },
-  { to: "/rechazadas", label: "Piezas rechazadas", icon: PackageX },
-  { to: "/configuracion", label: "Configuracion", icon: SlidersHorizontal },
+  { to: "/rechazadas", label: "Limones rechazados", icon: PackageX },
+  { to: "/modelos-ia", label: "Modelos de IA", icon: Cpu },
+  { to: "/configuracion", label: "Configuración", icon: SlidersHorizontal },
   { to: "/ayuda", label: "Ayuda", icon: CircleHelp },
 ];
 
@@ -19,8 +20,8 @@ function initialsOf(name = "") {
 }
 
 // Escritorio (lg+): rail completo con etiquetas. Tablet (sm-lg): rail de solo
-// iconos para no robar ancho al contenido. Telefonos (<sm): oculto -- el uso
-// principal de este panel es de escritorio, segun el requisito de diseno.
+// iconos para no robar ancho al contenido. Teléfonos (<sm): oculto -- el uso
+// principal de este panel es de escritorio, según el requisito de diseño.
 export function Sidebar() {
   const { connectionOk } = useSystem();
   const { user, logout } = useAuth();
@@ -39,7 +40,7 @@ export function Sidebar() {
         </div>
         <div className="hidden lg:block">
           <p className="text-sm font-semibold text-ink leading-tight">InspectaLine</p>
-          <p className="text-[11px] text-ink-faint leading-tight">Vision artificial</p>
+          <p className="text-[11px] text-ink-faint leading-tight">Calidad de limones</p>
         </div>
       </div>
 
@@ -83,7 +84,7 @@ export function Sidebar() {
         <button
           type="button"
           onClick={handleLogout}
-          title="Cerrar sesion"
+          title="Cerrar sesión"
           className="focus-ring shrink-0 rounded-lg p-1.5 text-ink-faint hover:bg-panel-alt hover:text-coral-500"
         >
           <LogOut size={15} strokeWidth={2} />

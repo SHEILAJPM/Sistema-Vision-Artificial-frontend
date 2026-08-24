@@ -7,11 +7,12 @@ import LoginPage from "./pages/LoginPage.jsx";
 import OverviewPage from "./pages/OverviewPage.jsx";
 import HistoryPage from "./pages/HistoryPage.jsx";
 import RejectedPage from "./pages/RejectedPage.jsx";
+import ModelsPage from "./pages/ModelsPage.jsx";
 import SettingsPage from "./pages/SettingsPage.jsx";
 import HelpPage from "./pages/HelpPage.jsx";
 
 // El estado en vivo (SystemProvider) solo tiene sentido una vez autenticado,
-// asi que se monta como layout route dentro del arbol protegido en vez de
+// así que se monta como layout route dentro del árbol protegido en vez de
 // envolver toda la app: /login nunca abre WS ni pide /api/status.
 function SystemLayout() {
   return (
@@ -35,6 +36,7 @@ export default function App() {
           <Route path="/" element={<OverviewPage />} />
           <Route path="/historial" element={<HistoryPage />} />
           <Route path="/rechazadas" element={<RejectedPage />} />
+          <Route path="/modelos-ia" element={<ModelsPage />} />
           <Route path="/configuracion" element={<SettingsPage />} />
           <Route path="/ayuda" element={<HelpPage />} />
         </Route>

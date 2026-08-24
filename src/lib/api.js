@@ -1,5 +1,5 @@
 // Cliente REST hacia el backend (Flask/FastAPI). Centraliza la URL base, el
-// token de sesion y el manejo de errores de red para que el resto de la app
+// token de sesión y el manejo de errores de red para que el resto de la app
 // no repita fetch/try-catch.
 
 export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:8000";
@@ -33,7 +33,7 @@ async function request(path, options = {}) {
   });
   if (res.status === 401) {
     unauthorizedHandler?.();
-    throw new Error("Sesion invalida o expirada");
+    throw new Error("Sesión inválida o expirada");
   }
   if (!res.ok) {
     const body = await res.text().catch(() => "");
@@ -72,5 +72,16 @@ export const getSettings = () => request("/api/settings");
 // POST /api/settings  body: partial settings object
 export const postSettings = (settings) =>
   request("/api/settings", { method: "POST", body: JSON.stringify(settings) });
+
+// GET /api/model/status -> { seleccion_activa, modelo_decision, modelo_a_cargado,
+//   modelo_b_cargado, modo_respaldo_heuristico, errores_carga }
+export const getModelStatus = () => request("/api/model/status");
+
+// POST /api/model/select  body: { modelo: "A" | "B" | "ambos" }
+export const postModelSelect = (modelo) =>
+  request("/api/model/select", { method: "POST", body: JSON.stringify({ modelo }) });
+
+// GET /api/model/comparacion -> { por_modelo, comparacion_directa, modelo_activo }
+export const getModelComparison = () => request("/api/model/comparacion");
 
 export const videoFeedUrl = () => `${API_BASE_URL}${VIDEO_FEED_PATH}`;
