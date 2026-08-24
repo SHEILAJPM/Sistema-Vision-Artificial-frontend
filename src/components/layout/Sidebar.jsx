@@ -1,5 +1,5 @@
 import { NavLink, useNavigate } from "react-router-dom";
-import { LayoutGrid, History, PackageX, Cpu, SlidersHorizontal, CircleHelp, ScanEye, LogOut } from "lucide-react";
+import { LayoutGrid, History, PackageX, FileText, Cpu, Users, SlidersHorizontal, CircleHelp, ScanEye, LogOut } from "lucide-react";
 import { useSystem } from "../../context/SystemProvider.jsx";
 import { useAuth } from "../../context/AuthProvider.jsx";
 import { StatDot } from "../ui/StatDot.jsx";
@@ -8,7 +8,9 @@ const NAV_ITEMS = [
   { to: "/", label: "Resumen en vivo", icon: LayoutGrid, end: true },
   { to: "/historial", label: "Historial de inspecciones", icon: History },
   { to: "/rechazadas", label: "Limones rechazados", icon: PackageX },
+  { to: "/reportes", label: "Reportes", icon: FileText },
   { to: "/modelos-ia", label: "Modelos de IA", icon: Cpu },
+  { to: "/usuarios", label: "Usuarios", icon: Users, adminOnly: true },
   { to: "/configuracion", label: "Configuración", icon: SlidersHorizontal },
   { to: "/ayuda", label: "Ayuda", icon: CircleHelp },
 ];
@@ -45,7 +47,7 @@ export function Sidebar() {
       </div>
 
       <nav className="flex-1 space-y-1">
-        {NAV_ITEMS.map(({ to, label, icon: Icon, end }) => (
+        {NAV_ITEMS.filter((item) => !item.adminOnly || user?.role === "Admin").map(({ to, label, icon: Icon, end }) => (
           <NavLink
             key={to}
             to={to}

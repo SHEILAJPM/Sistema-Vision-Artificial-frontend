@@ -7,16 +7,22 @@ import { useSystem } from "../../context/SystemProvider.jsx";
 
 export function ControlPanel() {
   const { status, sendCommand } = useSystem();
-  const [pending, setPending] = useState(null);
+  // Set (no un solo string) porque los botones son acciones independientes:
+  // un comando en vuelo no debe afectar el estado "disabled" de los demás.
+  const [pending, setPending] = useState(() => new Set());
 
   const bandaRunning = status?.banda === "running";
   const luzOn = status?.luz === "on";
   const arduinoConnected = status?.arduino === "connected";
 
   const run = async (command) => {
-    setPending(command);
+    setPending((prev) => new Set(prev).add(command));
     await sendCommand(command);
-    setPending(null);
+    setPending((prev) => {
+      const next = new Set(prev);
+      next.delete(command);
+      return next;
+    });
   };
 
   return (
@@ -39,7 +45,7 @@ export function ControlPanel() {
         <Button
           variant={bandaRunning ? "danger" : "primary"}
           icon={bandaRunning ? Square : Play}
-          disabled={pending === "START" || pending === "STOP"}
+          disabled={pending.has("START") || pending.has("STOP")}
           onClick={() => run(bandaRunning ? "STOP" : "START")}
         >
           {bandaRunning ? "Detener banda" : "Iniciar banda"}
@@ -48,7 +54,7 @@ export function ControlPanel() {
         <Button
           variant="soft"
           icon={luzOn ? LightbulbOff : Lightbulb}
-          disabled={pending === "LIGHT_ON" || pending === "LIGHT_OFF"}
+          disabled={pending.has("LIGHT_ON") || pending.has("LIGHT_OFF")}
           onClick={() => run(luzOn ? "LIGHT_OFF" : "LIGHT_ON")}
         >
           {luzOn ? "Apagar luz" : "Encender luz"}
@@ -57,7 +63,7 @@ export function ControlPanel() {
         <Button
           variant="soft"
           icon={Wrench}
-          disabled={pending === "TEST_SERVO"}
+          disabled={pending.has("TEST_SERVO")}
           onClick={() => run("TEST_SERVO")}
         >
           Probar servo
@@ -67,7 +73,7 @@ export function ControlPanel() {
           variant="outline"
           icon={RefreshCw}
           className="col-span-2 md:col-span-3"
-          disabled={pending === "RECONNECT_ARDUINO"}
+          disabled={pending.has("RECONNECT_ARDUINO")}
           onClick={() => run("RECONNECT_ARDUINO")}
         >
           Reiniciar conexión con Arduino

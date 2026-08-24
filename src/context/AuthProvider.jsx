@@ -8,6 +8,7 @@ import {
   postLogout,
   getMe,
 } from "../lib/api.js";
+import { mockUsers } from "../data/mockData.js";
 
 const AuthContext = createContext(null);
 
@@ -64,7 +65,14 @@ export function AuthProvider({ children }) {
 
     if (USE_MOCK_DATA) {
       await new Promise((r) => setTimeout(r, 400));
-      const demoUser = { name: username, role: "Operador" };
+      // En modo demo no hay backend que valide credenciales: si el usuario
+      // coincide con uno de mockUsers se entra como ese usuario (mismo id,
+      // así /usuarios lo reconoce como "tú mismo"); si no, cualquier usuario
+      // que contenga "admin" entra como Admin para poder probar la sección.
+      const match = mockUsers.find((u) => u.username === username);
+      const demoUser = match
+        ? { id: match.id, username: match.username, name: match.name, role: match.role }
+        : { name: username, role: username.toLowerCase().includes("admin") ? "Admin" : "Operador" };
       setStoredToken("demo-token");
       localStorage.setItem(MOCK_USER_KEY, JSON.stringify(demoUser));
       setUser(demoUser);

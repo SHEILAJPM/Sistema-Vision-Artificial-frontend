@@ -10,6 +10,7 @@ import {
   getSettings,
   postControl,
   postSettings,
+  resolveMediaUrl,
 } from "../lib/api.js";
 import { useWebSocket } from "../lib/useWebSocket.js";
 import { mockStatus, mockStats, mockEvents, mockSettings, mockDetections } from "../data/mockData.js";
@@ -41,7 +42,9 @@ export function SystemProvider({ children }) {
         setStats((prev) => ({ ...prev, ...msg.data }));
         break;
       case "event":
-        setEvents((prev) => [msg.data, ...prev].slice(0, 100));
+        setEvents((prev) =>
+          [{ ...msg.data, thumbnail: resolveMediaUrl(msg.data.thumbnail) }, ...prev].slice(0, 100)
+        );
         break;
       case "detections":
         // { boxes: [{x,y,w,h,label,confidence}], frame_w, frame_h }
@@ -68,7 +71,7 @@ export function SystemProvider({ children }) {
       const [s, st, ev] = await Promise.all([getStatus(), getStats(), getEvents(50)]);
       setStatus((prev) => ({ ...prev, ...s }));
       setStats((prev) => ({ ...prev, ...st }));
-      setEvents(ev);
+      setEvents(ev.map((e) => ({ ...e, thumbnail: resolveMediaUrl(e.thumbnail) })));
       setBackendReachable(true);
       setLastError(null);
     } catch (err) {

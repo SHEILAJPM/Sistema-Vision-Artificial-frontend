@@ -77,7 +77,8 @@ export default function LoginPage() {
 
           {USE_MOCK_DATA && (
             <div className="mb-5 rounded-lg border border-blue-100 bg-blue-50 px-3.5 py-2.5 text-xs text-blue-700">
-              Modo demo: cualquier usuario y contraseña funcionan.
+              Modo demo: cualquier usuario y contraseña funcionan. Usa un usuario que
+              contenga &quot;admin&quot; para probar la sección de Usuarios.
             </div>
           )}
 
