@@ -1,3 +1,4 @@
+import { AnimatePresence, motion } from "motion/react";
 import { ImageOff } from "lucide-react";
 import { Card, CardHeader } from "../ui/Card.jsx";
 import { Badge } from "../ui/Badge.jsx";
@@ -43,30 +44,39 @@ export function EventsTable({
                 </td>
               </tr>
             )}
-            {rows.map((ev) => {
-              const isOk = ev.result === "ok";
-              return (
-                <tr key={ev.id} className="border-b border-line last:border-0 hover:bg-panel/60">
-                  <td className="px-5 py-2.5">
-                    {ev.thumbnail ? (
-                      <img src={ev.thumbnail} alt="" className="h-9 w-9 rounded-md object-cover border border-line" />
-                    ) : (
-                      <div className="flex h-9 w-9 items-center justify-center rounded-md border border-line bg-panel-alt text-ink-faint">
-                        <ImageOff size={14} strokeWidth={1.5} />
-                      </div>
-                    )}
-                  </td>
-                  <td className="px-3 py-2.5 text-ink-soft tnum">{formatTime.format(new Date(ev.timestamp))}</td>
-                  <td className="px-3 py-2.5">
-                    <Badge tone={isOk ? "ok" : "rejected"}>{isOk ? "OK" : "Rechazado"}</Badge>
-                  </td>
-                  <td className="px-3 py-2.5 text-ink-soft">{ev.action}</td>
-                  <td className="px-3 py-2.5 pr-5 text-right text-ink-soft tnum">
-                    {ev.confidence != null ? `${Math.round(ev.confidence * 100)}%` : "--"}
-                  </td>
-                </tr>
-              );
-            })}
+            <AnimatePresence initial={false}>
+              {rows.map((ev) => {
+                const isOk = ev.result === "ok";
+                return (
+                  <motion.tr
+                    key={ev.id}
+                    initial={{ opacity: 0, y: -10, backgroundColor: isOk ? "rgba(66,115,176,0.10)" : "rgba(202,85,81,0.10)" }}
+                    animate={{ opacity: 1, y: 0, backgroundColor: "rgba(0,0,0,0)" }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.45, ease: "easeOut" }}
+                    className="border-b border-line last:border-0 hover:bg-panel/60"
+                  >
+                    <td className="px-5 py-2.5">
+                      {ev.thumbnail ? (
+                        <img src={ev.thumbnail} alt="" className="h-9 w-9 rounded-md object-cover border border-line" />
+                      ) : (
+                        <div className="flex h-9 w-9 items-center justify-center rounded-md border border-line bg-panel-alt text-ink-faint">
+                          <ImageOff size={14} strokeWidth={1.5} />
+                        </div>
+                      )}
+                    </td>
+                    <td className="px-3 py-2.5 text-ink-soft tnum">{formatTime.format(new Date(ev.timestamp))}</td>
+                    <td className="px-3 py-2.5">
+                      <Badge tone={isOk ? "ok" : "rejected"}>{isOk ? "OK" : "Rechazado"}</Badge>
+                    </td>
+                    <td className="px-3 py-2.5 text-ink-soft">{ev.action}</td>
+                    <td className="px-3 py-2.5 pr-5 text-right text-ink-soft tnum">
+                      {ev.confidence != null ? `${Math.round(ev.confidence * 100)}%` : "--"}
+                    </td>
+                  </motion.tr>
+                );
+              })}
+            </AnimatePresence>
           </tbody>
         </table>
       </div>

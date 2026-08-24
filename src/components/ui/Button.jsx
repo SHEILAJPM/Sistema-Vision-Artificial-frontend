@@ -22,7 +22,7 @@ export function Button({
   return (
     <button
       disabled={disabled}
-      className={`focus-ring inline-flex items-center justify-center rounded-lg font-medium transition-colors duration-150 disabled:opacity-40 disabled:cursor-not-allowed ${VARIANTS[variant]} ${SIZES[size]} ${className}`}
+      className={`focus-ring inline-flex items-center justify-center rounded-lg font-medium transition-all duration-150 active:scale-[0.96] disabled:opacity-40 disabled:cursor-not-allowed disabled:active:scale-100 ${VARIANTS[variant]} ${SIZES[size]} ${className}`}
       {...props}
     >
       {Icon && <Icon size={size === "sm" ? 14 : 16} strokeWidth={2} />}

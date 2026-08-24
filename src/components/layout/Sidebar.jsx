@@ -1,4 +1,5 @@
 import { NavLink, useNavigate } from "react-router-dom";
+import { motion } from "motion/react";
 import { LayoutGrid, History, PackageX, FileText, Cpu, Users, SlidersHorizontal, CircleHelp, ScanEye, LogOut } from "lucide-react";
 import { useSystem } from "../../context/SystemProvider.jsx";
 import { useAuth } from "../../context/AuthProvider.jsx";
@@ -54,15 +55,29 @@ export function Sidebar() {
             end={end}
             title={label}
             className={({ isActive }) =>
-              `focus-ring flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm transition-colors duration-150 justify-center lg:justify-start ${
-                isActive
-                  ? "bg-blue-50 text-blue-700 font-medium"
-                  : "text-ink-soft hover:bg-panel-alt hover:text-ink"
+              `focus-ring relative flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm transition-colors duration-150 justify-center lg:justify-start ${
+                isActive ? "text-blue-700 font-medium" : "text-ink-soft hover:bg-panel-alt hover:text-ink"
               }`
             }
           >
-            <Icon size={17} strokeWidth={2} className="shrink-0" />
-            <span className="hidden lg:inline">{label}</span>
+            {({ isActive }) =>
+              isActive ? (
+                <>
+                  <motion.span
+                    layoutId="sidebar-active-pill"
+                    className="absolute inset-0 rounded-lg bg-blue-50"
+                    transition={{ type: "spring", stiffness: 500, damping: 34 }}
+                  />
+                  <Icon size={17} strokeWidth={2} className="relative z-10 shrink-0" />
+                  <span className="relative z-10 hidden lg:inline">{label}</span>
+                </>
+              ) : (
+                <>
+                  <Icon size={17} strokeWidth={2} className="shrink-0" />
+                  <span className="hidden lg:inline">{label}</span>
+                </>
+              )
+            }
           </NavLink>
         ))}
       </nav>

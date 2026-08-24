@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { AnimatePresence, motion } from "motion/react";
 import { CameraOff, Radio } from "lucide-react";
 import { Card, CardHeader } from "../ui/Card.jsx";
 import { Badge } from "../ui/Badge.jsx";
@@ -67,34 +68,40 @@ export function LiveFeed() {
         {/* Overlay de cajas de detección, escalado al tamaño renderizado */}
         {scaleX > 0 && scaleY > 0 && (USE_MOCK_DATA || feedOk) && (
           <div className="absolute inset-0">
-            {detections.boxes.map((det, i) => {
-              // Azul/coral: el único par de identidad validado para daltonismo,
-              // por eso lo usamos aquí aunque haya varios limones en pantalla
-              // a la vez (nunca teal junto a coral, ver notas de paleta).
-              const isDefect = det.label?.toLowerCase().includes("defect");
-              return (
-                <div
-                  key={i}
-                  className={`absolute rounded-md border-2 ${
-                    isDefect ? "border-coral-500" : "border-blue-400"
-                  }`}
-                  style={{
-                    left: det.x * scaleX,
-                    top: det.y * scaleY,
-                    width: det.w * scaleX,
-                    height: det.h * scaleY,
-                  }}
-                >
-                  <span
-                    className={`absolute -top-6 left-0 whitespace-nowrap rounded px-1.5 py-0.5 text-[11px] font-medium text-white ${
-                      isDefect ? "bg-coral-500" : "bg-blue-400"
+            <AnimatePresence>
+              {detections.boxes.map((det, i) => {
+                // Azul/coral: el único par de identidad validado para daltonismo,
+                // por eso lo usamos aquí aunque haya varios limones en pantalla
+                // a la vez (nunca teal junto a coral, ver notas de paleta).
+                const isDefect = det.label?.toLowerCase().includes("defect");
+                return (
+                  <motion.div
+                    key={i}
+                    initial={{ opacity: 0, scale: 0.85 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.9 }}
+                    transition={{ duration: 0.18, ease: "easeOut" }}
+                    className={`absolute rounded-md border-2 ${
+                      isDefect ? "border-coral-500" : "border-blue-400"
                     }`}
+                    style={{
+                      left: det.x * scaleX,
+                      top: det.y * scaleY,
+                      width: det.w * scaleX,
+                      height: det.h * scaleY,
+                    }}
                   >
-                    {isDefect ? "Defectuoso" : "OK"} · {Math.round((det.confidence ?? 0) * 100)}%
-                  </span>
-                </div>
-              );
-            })}
+                    <span
+                      className={`absolute -top-6 left-0 whitespace-nowrap rounded px-1.5 py-0.5 text-[11px] font-medium text-white ${
+                        isDefect ? "bg-coral-500" : "bg-blue-400"
+                      }`}
+                    >
+                      {isDefect ? "Defectuoso" : "OK"} · {Math.round((det.confidence ?? 0) * 100)}%
+                    </span>
+                  </motion.div>
+                );
+              })}
+            </AnimatePresence>
           </div>
         )}
       </div>
