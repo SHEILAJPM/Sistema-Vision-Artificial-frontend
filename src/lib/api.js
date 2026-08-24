@@ -1,0 +1,43 @@
+// Cliente REST hacia el backend (Flask/FastAPI). Centraliza la URL base y el
+// manejo de errores de red para que el resto de la app no repita fetch/try-catch.
+
+export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:8000";
+export const WS_URL = import.meta.env.VITE_WS_URL || "ws://localhost:8000/ws";
+export const VIDEO_FEED_PATH = import.meta.env.VITE_VIDEO_FEED_PATH || "/api/video_feed";
+export const POLL_INTERVAL_MS = Number(import.meta.env.VITE_POLL_INTERVAL_MS) || 1500;
+export const USE_MOCK_DATA = import.meta.env.VITE_USE_MOCK_DATA === "true";
+
+async function request(path, options = {}) {
+  const res = await fetch(`${API_BASE_URL}${path}`, {
+    headers: { "Content-Type": "application/json" },
+    ...options,
+  });
+  if (!res.ok) {
+    const body = await res.text().catch(() => "");
+    throw new Error(`${options.method || "GET"} ${path} -> HTTP ${res.status} ${body}`);
+  }
+  const contentType = res.headers.get("content-type") || "";
+  return contentType.includes("application/json") ? res.json() : res.text();
+}
+
+// GET /api/status -> { banda, luz, arduino, backend }
+export const getStatus = () => request("/api/status");
+
+// POST /api/control  body: { command: "START" | "STOP" | "LIGHT_ON" | "LIGHT_OFF" | "TEST_SERVO" | "RECONNECT_ARDUINO" }
+export const postControl = (command, payload = {}) =>
+  request("/api/control", { method: "POST", body: JSON.stringify({ command, ...payload }) });
+
+// GET /api/stats -> { today, trend, distribution }
+export const getStats = () => request("/api/stats");
+
+// GET /api/events?limit=50 -> [{ id, timestamp, result, action, thumbnail }]
+export const getEvents = (limit = 50) => request(`/api/events?limit=${limit}`);
+
+// GET /api/settings -> { pwmSpeed, confidenceThreshold, camera, cameras, serialPort, baudrate, ports }
+export const getSettings = () => request("/api/settings");
+
+// POST /api/settings  body: partial settings object
+export const postSettings = (settings) =>
+  request("/api/settings", { method: "POST", body: JSON.stringify(settings) });
+
+export const videoFeedUrl = () => `${API_BASE_URL}${VIDEO_FEED_PATH}`;
