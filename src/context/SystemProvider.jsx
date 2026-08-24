@@ -3,6 +3,7 @@ import {
   WS_URL,
   POLL_INTERVAL_MS,
   USE_MOCK_DATA,
+  getStoredToken,
   getStatus,
   getStats,
   getEvents,
@@ -51,7 +52,12 @@ export function SystemProvider({ children }) {
     }
   }, []);
 
-  const { connected: wsConnected } = useWebSocket(USE_MOCK_DATA ? null : WS_URL, {
+  // El navegador no permite headers custom en WebSocket, asi que el token de
+  // sesion va como query param -- el backend debe leerlo de ahi para
+  // autenticar la conexion (en vez de un header Authorization).
+  const token = getStoredToken();
+  const wsUrl = USE_MOCK_DATA || !token ? null : `${WS_URL}?token=${encodeURIComponent(token)}`;
+  const { connected: wsConnected } = useWebSocket(wsUrl, {
     onMessage: handleMessage,
     enabled: !USE_MOCK_DATA,
   });
