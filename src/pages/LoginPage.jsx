@@ -33,30 +33,18 @@ export default function LoginPage() {
 
   return (
     <div className="flex min-h-screen bg-canvas">
-      {/* Panel de marca -- solo en pantallas medianas en adelante. La foto es
-          la cosecha real que este sistema termina inspeccionando en la linea. */}
-      <div className="hidden lg:flex relative w-1/2 flex-col justify-between overflow-hidden px-14 py-12">
-        <img
-          src={harvestPhoto}
-          alt=""
-          className="absolute inset-0 h-full w-full object-cover"
-        />
-        <div
-          className="absolute inset-0"
-          style={{
-            background:
-              "linear-gradient(180deg, rgba(23,63,110,0.85) 0%, rgba(23,63,110,0.32) 45%, rgba(23,63,110,0.88) 100%)",
-          }}
-        />
-
-        <div className="relative flex items-center gap-2.5">
+      {/* Panel de marca -- solo en pantallas medianas en adelante. La foto
+          fuente es de solo 800x450: se muestra en una tarjeta contenida, no
+          como fondo a pantalla completa, para no estirarla y que se pixele. */}
+      <div className="hidden lg:flex w-1/2 flex-col justify-between bg-gradient-to-b from-blue-600 to-blue-700 px-14 py-12">
+        <div className="flex items-center gap-2.5">
           <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-white text-blue-600">
             <ScanEye size={18} strokeWidth={2} />
           </div>
           <p className="text-sm font-semibold text-white">InspectaLine</p>
         </div>
 
-        <div className="relative max-w-sm">
+        <div className="max-w-sm">
           <p className="text-2xl font-semibold text-white leading-snug">
             Monitoreo y control de la linea de inspeccion visual.
           </p>
@@ -64,9 +52,14 @@ export default function LoginPage() {
             Banda transportadora, iluminacion, servo de rechazo y deteccion de defectos
             con YOLOv8, en un solo panel — de la cosecha en Piura a la linea de empaque.
           </p>
+
+          <div className="mt-7 max-w-[380px] overflow-hidden rounded-2xl border border-white/15 shadow-card-hover">
+            <img src={harvestPhoto} alt="Cosecha de limon en Piura" className="block h-auto w-full" />
+          </div>
+          <p className="mt-2.5 text-xs text-blue-50/60">Cosecha de limon, Piura — Peru</p>
         </div>
 
-        <p className="relative text-xs text-blue-50/70">Acceso restringido a personal autorizado de planta</p>
+        <p className="text-xs text-blue-50/70">Acceso restringido a personal autorizado de planta</p>
       </div>
 
       {/* Formulario */}
