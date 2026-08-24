@@ -9,7 +9,7 @@ export default function HistoryPage() {
   const ok = events.filter((e) => e.result === "ok").length;
 
   return (
-    <AppShell title="Historial de inspecciones" subtitle="Registro completo de piezas procesadas por el sistema">
+    <AppShell title="Historial de inspecciones" subtitle="Registro completo de limones procesados por el sistema">
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <Card>
           <p className="text-xs uppercase tracking-wide text-ink-faint mb-1">Eventos en pantalla</p>
@@ -29,7 +29,7 @@ export default function HistoryPage() {
         limit={100}
         showDate
         title="Todos los eventos"
-        subtitle="Piezas inspeccionadas, mas recientes primero"
+        subtitle="Limones inspeccionados, más recientes primero"
       />
     </AppShell>
   );

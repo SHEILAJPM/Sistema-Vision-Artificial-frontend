@@ -12,7 +12,7 @@ export function ConnectionBanner() {
   if (!arduinoDown && !backendDown) return null;
 
   const message = backendDown
-    ? "Sin conexion con el backend. Verifica que el servidor este activo y reintenta."
+    ? "Sin conexión con el backend. Verifica que el servidor esté activo y reintenta."
     : "Arduino desconectado. La banda, la luz y el servo no responderan a comandos.";
 
   return (

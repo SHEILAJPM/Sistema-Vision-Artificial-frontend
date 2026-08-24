@@ -1,8 +1,8 @@
 import { useEffect, useRef, useState, useCallback } from "react";
 
-// WebSocket con reintento exponencial acotado. Expone el ultimo mensaje
-// parseado y el estado de la conexion; onMessage se invoca por cada frame
-// para que el consumidor decida como fusionarlo a su estado.
+// WebSocket con reintento exponencial acotado. Expone el último mensaje
+// parseado y el estado de la conexión; onMessage se invoca por cada frame
+// para que el consumidor decida cómo fusionarlo a su estado.
 export function useWebSocket(url, { onMessage, enabled = true } = {}) {
   const [connected, setConnected] = useState(false);
   const socketRef = useRef(null);

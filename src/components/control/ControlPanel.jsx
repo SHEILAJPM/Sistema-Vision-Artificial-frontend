@@ -29,7 +29,7 @@ export function ControlPanel() {
             <Plug size={13} className={arduinoConnected ? "text-teal-600" : "text-coral-500"} strokeWidth={2} />
             <StatDot tone={arduinoConnected ? "ok" : "rejected"} pulse={arduinoConnected} />
             <span className="text-xs text-ink-soft">
-              {arduinoConnected ? `Conectado · ${status?.serialPort ?? "--"}` : "Sin conexion serial"}
+              {arduinoConnected ? `Conectado · ${status?.serialPort ?? "--"}` : "Sin conexión serial"}
             </span>
           </div>
         }
@@ -70,7 +70,7 @@ export function ControlPanel() {
           disabled={pending === "RECONNECT_ARDUINO"}
           onClick={() => run("RECONNECT_ARDUINO")}
         >
-          Reiniciar conexion con Arduino
+          Reiniciar conexión con Arduino
         </Button>
       </div>
     </Card>

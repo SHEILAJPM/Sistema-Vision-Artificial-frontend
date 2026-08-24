@@ -1,9 +1,10 @@
 # InspectaLine — Dashboard de monitoreo y control
 
-Panel web para el sistema de inspeccion visual automatizado (banda transportadora +
-Arduino + L298N + rele de iluminacion + servo de rechazo + deteccion con YOLOv8).
-Se conecta a un backend Python (Flask o FastAPI) que habla con el Arduino por serial
-y corre el modelo de vision.
+Panel web para un sistema de control de calidad de limones por vision artificial
+(banda transportadora + Arduino + L298N + rele de iluminacion + servo de rechazo +
+deteccion de defectos con YOLOv8, con opcion de comparar contra un segundo modelo
+clasificador). Se conecta a un backend Python (Flask o FastAPI) que habla con el
+Arduino por serial y corre los modelos de vision.
 
 **Stack**: React 18 + Vite + Tailwind CSS + Recharts + lucide-react + react-router-dom.
 Se eligio React/Tailwind (no HTML/CSS/JS puro) porque el panel tiene bastante estado
@@ -110,17 +111,25 @@ estado/los eventos.
 | `POST` | `/api/auth/logout` | Invalida el token en el backend (best effort) |
 | `GET` | `/api/status` | `{ banda, luz, arduino, backend, serialPort, baudrate }` |
 | `POST` | `/api/control` | body `{ command }`, `command` ∈ `START`, `STOP`, `LIGHT_ON`, `LIGHT_OFF`, `TEST_SERVO`, `RECONNECT_ARDUINO` |
-| `GET` | `/api/stats` | `{ today: { inspected, rejected, rejectRate }, trend: [...], distribution: { ok, defectuosas } }` |
+| `GET` | `/api/stats` | `{ today: { inspected, rejected, rejectRate }, trend: [...], distribution: { ok, defectuosos } }` |
 | `GET` | `/api/events?limit=50` | `[{ id, timestamp, result: "ok"\|"rejected", action, confidence, thumbnail }]` |
 | `GET` | `/api/settings` | `{ pwmSpeed, confidenceThreshold, camera, cameras, serialPort, baudrate, ports, baudrates }` |
 | `POST` | `/api/settings` | body: subconjunto de lo anterior a actualizar |
+| `GET` | `/api/model/status` | `{ seleccion_activa, modelo_decision, modelo_a_cargado, modelo_b_cargado, modo_respaldo_heuristico, errores_carga }` |
+| `POST` | `/api/model/select` | body `{ modelo: "A" \| "B" \| "ambos" }` — cual modelo evalua cada limon |
+| `GET` | `/api/model/comparacion` | `{ por_modelo: { A, B }, comparacion_directa, modelo_activo }` — metricas de acuerdo entre A y B |
 | `GET` | `/api/video_feed` | Stream MJPEG (`multipart/x-mixed-replace`) usado directo como `src` de un `<img>` |
 
-`/api/settings` y `/api/auth/*` no estaban en la lista original del pedido. `/api/settings`
-es necesario para que la pantalla de Configuracion (velocidad de banda, umbral de
-confianza, camara, puerto serial/baudrate) lea y guarde valores reales; `/api/auth/*` es
-lo que pide el login agregado despues (ver seccion 3). Si el backend aun no expone
-alguno de estos, el panel sigue funcionando igual con `VITE_USE_MOCK_DATA=true`.
+`/api/settings`, `/api/auth/*` y `/api/model/*` no estaban en la lista original del
+pedido. `/api/settings` es necesario para que la pantalla de Configuracion (velocidad
+de banda, umbral de confianza, camara, puerto serial/baudrate) lea y guarde valores
+reales; `/api/auth/*` es lo que pide el login (ver seccion 3); `/api/model/*` es lo que
+consume la pantalla de Modelos de IA para elegir entre el modelo A (YOLOv8, deteccion y
+localizacion), el modelo B (clasificador ResNet18) o correr ambos en paralelo y comparar
+que tan de acuerdo estan. `modo_respaldo_heuristico` indica que ningun modelo entrenado
+esta cargado y el sistema esta usando un heuristico simple sin pesos, solo para poder
+seguir probando banda/luz/servo. Si el backend aun no expone alguno de estos, el panel
+sigue funcionando igual con `VITE_USE_MOCK_DATA=true`.
 
 Todos los endpoints salvo `/api/auth/login` esperan el header
 `Authorization: Bearer <token>` una vez el usuario inicio sesion.
@@ -164,6 +173,8 @@ src/
     SystemProvider.jsx       Estado global: status, stats, events, settings, detections
   data/
     mockData.js               Datos de ejemplo (VITE_USE_MOCK_DATA=true)
+  assets/
+    cosecha-limones-piura.jpg  Foto usada en el panel de marca del login
   components/
     auth/
       RequireAuth.jsx         Layout route que redirige a /login si no hay sesion
@@ -175,17 +186,20 @@ src/
     ui/
       Card.jsx, Badge.jsx, Button.jsx, Toggle.jsx, StatDot.jsx
     overview/
-      KpiCards.jsx             KPIs: banda, luz, inspeccionadas, rechazadas
+      KpiCards.jsx             KPIs: banda, luz, limones inspeccionados, rechazados
       LiveFeed.jsx              Stream MJPEG + overlay de cajas YOLOv8
-      TrendChart.jsx            Linea: inspeccionadas vs. rechazadas
-      DistributionChart.jsx    Dona: OK vs. defectuosas
-      EventsTable.jsx           Tabla de eventos (reusada en Historial y Rechazadas)
+      TrendChart.jsx            Linea: limones inspeccionados vs. rechazados
+      DistributionChart.jsx    Dona: OK vs. defectuosos
+      EventsTable.jsx           Tabla de eventos (reusada en Historial y Rechazados)
     control/
       ControlPanel.jsx        Control manual + indicador de conexion serial
+    models/
+      ModelComparisonPanel.jsx Selector de modelo (A/B/ambos) + comparacion de metricas
     settings/
       SettingsPanel.jsx        PWM, umbral de confianza, camara, puerto serial/baudrate
   pages/
-    LoginPage.jsx, OverviewPage.jsx, HistoryPage.jsx, RejectedPage.jsx, SettingsPage.jsx, HelpPage.jsx
+    LoginPage.jsx, OverviewPage.jsx, HistoryPage.jsx, RejectedPage.jsx, ModelsPage.jsx,
+    SettingsPage.jsx, HelpPage.jsx
 ```
 
 ## 7. Guia de estilo aplicada
@@ -196,7 +210,7 @@ src/
   (`#006955`–`#3C8A76`, estados "conectado"/"bueno" puntuales) y beige
   (`#876114`/`#F7F2E7`, acentos neutros) — todo mate, sin brillos ni saturacion neon.
 - El unico par usado para **identificar datos que aparecen lado a lado** (cajas de
-  deteccion simultaneas, lineas del grafico de tendencia, dona OK/defectuosas, badges
+  deteccion simultaneas, lineas del grafico de tendencia, dona OK/defectuosos, badges
   de la tabla de eventos) es **azul/coral**: es el unico par de la paleta que valida
   limpio contra daltonismo protanopia/deuteranopia (verificado con el validador de
   paletas de datavis del equipo, ΔE ≈ 15–24 en todos los checks). El teal se reservo
@@ -225,11 +239,13 @@ src/
 
 Capturas tomadas en modo demo (`VITE_USE_MOCK_DATA=true`) a 1440px de ancho.
 
-- **Login**: pantalla partida en dos en escritorio — panel izquierdo con fondo azul
-  muy suave, logo y una linea de contexto del sistema; panel derecho blanco con el
-  formulario (usuario, contrasena con boton de mostrar/ocultar, banner de error en
-  coral suave si falla, aviso de "modo demo" cuando `VITE_USE_MOCK_DATA=true`). En
-  pantallas chicas colapsa a una sola columna centrada.
+- **Login**: pantalla partida en dos en escritorio — panel izquierdo en degrade azul
+  con logo, titular, y una foto real de la cosecha de limon en Piura en una tarjeta
+  contenida (no a pantalla completa: la foto fuente es de baja resolucion y se pixela
+  si se estira mas alla de su tamano nativo); panel derecho blanco con el formulario
+  (usuario, contrasena con boton de mostrar/ocultar, banner de error en coral suave si
+  falla, aviso de "modo demo" cuando `VITE_USE_MOCK_DATA=true`). En pantallas chicas
+  colapsa a una sola columna centrada.
 - **Resumen en vivo**: fila de 4 KPI cards (banda/luz con boton de accion inline,
   inspeccionadas y rechazadas con badge de porcentaje) → feed de camara con cajas de
   deteccion superpuestas + panel de control manual a la derecha → grafico de tendencia
@@ -237,8 +253,14 @@ Capturas tomadas en modo demo (`VITE_USE_MOCK_DATA=true`) a 1440px de ancho.
   hora, badge de resultado, accion y confianza.
 - **Historial de inspecciones**: 3 tarjetas resumen (eventos en pantalla, OK, % de
   rechazo acumulado) seguidas de la tabla completa de eventos con fecha y hora.
-- **Piezas rechazadas**: 2 tarjetas resumen (rechazadas hoy, % de rechazo) y la misma
+- **Limones rechazados**: 2 tarjetas resumen (rechazados hoy, % de rechazo) y la misma
   tabla filtrada solo a `result: "rejected"`.
+- **Modelos de IA**: tarjeta con 3 opciones para elegir que evalua cada limon (Modelo A
+  YOLOv8, Modelo B ResNet18, o "Comparar ambos"); banner beige si el sistema esta en
+  modo de respaldo heuristico (sin modelo entrenado cargado); dos tarjetas de estado de
+  carga por modelo; tabla comparativa (inspecciones, confianza promedio, latencia
+  promedio, defectuosos detectados por modelo); y una tarjeta de acuerdo entre A y B
+  (coincidencias, discrepancias, % de acuerdo) cuando estan corriendo en paralelo.
 - **Configuracion**: 3 tarjetas — banda (slider PWM 0–255), modelo (slider de umbral de
   confianza 10–99% + selector de camara), conexion serial (selector de puerto y
   baudrate) — y un boton "Guardar configuracion" que hace `POST /api/settings`.

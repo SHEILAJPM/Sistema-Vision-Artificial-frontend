@@ -7,10 +7,10 @@ export default function RejectedPage() {
   const { stats } = useSystem();
 
   return (
-    <AppShell title="Piezas rechazadas" subtitle="Piezas marcadas como defectuosas por el modelo YOLOv8">
+    <AppShell title="Limones rechazados" subtitle="Limones marcados como defectuosos por el modelo YOLOv8">
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <Card>
-          <p className="text-xs uppercase tracking-wide text-ink-faint mb-1">Rechazadas hoy</p>
+          <p className="text-xs uppercase tracking-wide text-ink-faint mb-1">Rechazados hoy</p>
           <p className="text-2xl font-semibold text-ink tnum">{stats?.today?.rejected ?? 0}</p>
         </Card>
         <Card>
@@ -23,9 +23,9 @@ export default function RejectedPage() {
         limit={100}
         showDate
         filterResult="rejected"
-        title="Piezas rechazadas"
-        subtitle="El servo de rechazo se activo en cada una de estas piezas"
-        emptyMessage="No se han rechazado piezas todavia."
+        title="Limones rechazados"
+        subtitle="El servo de rechazo se activó en cada uno de estos limones"
+        emptyMessage="No se han rechazado limones todavía."
       />
     </AppShell>
   );

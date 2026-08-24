@@ -8,7 +8,7 @@ export function SplashScreen() {
       <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-blue-500 text-white animate-pulse-soft">
         <ScanEye size={20} strokeWidth={2} />
       </div>
-      <p className="text-xs text-ink-faint">Verificando sesion...</p>
+      <p className="text-xs text-ink-faint">Verificando sesión...</p>
     </div>
   );
 }

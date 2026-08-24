@@ -10,9 +10,9 @@ export function EventsTable({
   limit = 10,
   filterResult, // "ok" | "rejected" | undefined (todas)
   title = "Eventos recientes",
-  subtitle = "Ultimas piezas procesadas por la linea",
+  subtitle = "Últimos limones procesados por la línea",
   showDate = false,
-  emptyMessage = "Aun no hay eventos registrados.",
+  emptyMessage = "Aún no hay eventos registrados.",
 }) {
   const { events } = useSystem();
   const filtered = filterResult ? events.filter((ev) => ev.result === filterResult) : events;
@@ -31,7 +31,7 @@ export function EventsTable({
               <th className="px-5 py-2.5 font-medium">Miniatura</th>
               <th className="px-3 py-2.5 font-medium">{showDate ? "Fecha y hora" : "Hora"}</th>
               <th className="px-3 py-2.5 font-medium">Resultado</th>
-              <th className="px-3 py-2.5 font-medium">Accion tomada</th>
+              <th className="px-3 py-2.5 font-medium">Acción tomada</th>
               <th className="px-3 py-2.5 font-medium text-right pr-5">Confianza</th>
             </tr>
           </thead>
@@ -58,7 +58,7 @@ export function EventsTable({
                   </td>
                   <td className="px-3 py-2.5 text-ink-soft tnum">{formatTime.format(new Date(ev.timestamp))}</td>
                   <td className="px-3 py-2.5">
-                    <Badge tone={isOk ? "ok" : "rejected"}>{isOk ? "OK" : "Rechazada"}</Badge>
+                    <Badge tone={isOk ? "ok" : "rejected"}>{isOk ? "OK" : "Rechazado"}</Badge>
                   </td>
                   <td className="px-3 py-2.5 text-ink-soft">{ev.action}</td>
                   <td className="px-3 py-2.5 pr-5 text-right text-ink-soft tnum">

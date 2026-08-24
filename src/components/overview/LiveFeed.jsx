@@ -5,11 +5,11 @@ import { Badge } from "../ui/Badge.jsx";
 import { useSystem } from "../../context/SystemProvider.jsx";
 import { videoFeedUrl, USE_MOCK_DATA } from "../../lib/api.js";
 
-// Feed de la camara con overlay de cajas YOLOv8 dibujado en el cliente.
+// Feed de la cámara con overlay de cajas YOLOv8 dibujado en el cliente.
 //
 // El backend expone el stream MJPEG ya listo (endpoint /api/video_feed via
-// <img>), que es el metodo mas simple y liviano para OpenCV + Flask/FastAPI.
-// Las cajas de deteccion, en cambio, llegan aparte por WebSocket (mensajes
+// <img>), que es el método más simple y liviano para OpenCV + Flask/FastAPI.
+// Las cajas de detección, en cambio, llegan aparte por WebSocket (mensajes
 // {type:"detections", data:{boxes,frame_w,frame_h}}) y se dibujan con divs
 // posicionados sobre el video: asi el estilo de las cajas/etiquetas sigue la
 // paleta del dashboard en vez de quedar "quemado" en el frame por OpenCV.
@@ -35,7 +35,7 @@ export function LiveFeed() {
   return (
     <Card padded={false} className="overflow-hidden">
       <div className="flex items-center justify-between px-5 pt-5">
-        <CardHeader title="Zona de inspeccion" subtitle="Stream en vivo con deteccion YOLOv8" />
+        <CardHeader title="Zona de inspección" subtitle="Stream en vivo con detección YOLOv8" />
         <div className="flex items-center gap-2 -mt-4">
           <Badge tone={status?.banda === "running" ? "info" : "neutral"}>
             <Radio size={12} strokeWidth={2.5} />
@@ -48,7 +48,7 @@ export function LiveFeed() {
         {feedOk ? (
           <img
             src={USE_MOCK_DATA ? undefined : videoFeedUrl()}
-            alt="Stream de camara de inspeccion"
+            alt="Stream de cámara de inspección"
             className="h-full w-full object-cover"
             onError={() => setFeedOk(false)}
             style={USE_MOCK_DATA ? { display: "none" } : undefined}
@@ -59,17 +59,17 @@ export function LiveFeed() {
           <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-panel-alt text-ink-faint">
             <CameraOff size={22} strokeWidth={1.5} />
             <p className="text-xs">
-              {USE_MOCK_DATA ? "Vista previa (datos de ejemplo)" : "Sin senal de camara"}
+              {USE_MOCK_DATA ? "Vista previa (datos de ejemplo)" : "Sin señal de cámara"}
             </p>
           </div>
         )}
 
-        {/* Overlay de cajas de deteccion, escalado al tamano renderizado */}
+        {/* Overlay de cajas de detección, escalado al tamaño renderizado */}
         {scaleX > 0 && scaleY > 0 && (USE_MOCK_DATA || feedOk) && (
           <div className="absolute inset-0">
             {detections.boxes.map((det, i) => {
-              // Azul/coral: el unico par de identidad validado para daltonismo,
-              // por eso lo usamos aqui aunque haya varias piezas en pantalla
+              // Azul/coral: el único par de identidad validado para daltonismo,
+              // por eso lo usamos aquí aunque haya varios limones en pantalla
               // a la vez (nunca teal junto a coral, ver notas de paleta).
               const isDefect = det.label?.toLowerCase().includes("defect");
               return (

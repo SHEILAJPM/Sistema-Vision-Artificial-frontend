@@ -45,7 +45,7 @@ export function KpiCards() {
         </div>
       </KpiShell>
 
-      <KpiShell icon={Lightbulb} label="Iluminacion (rele)">
+      <KpiShell icon={Lightbulb} label="Iluminación (relé)">
         <div className="flex items-center justify-between">
           <div>
             <p className="text-lg font-semibold text-ink tnum">{luzOn ? "Encendida" : "Apagada"}</p>
@@ -61,17 +61,17 @@ export function KpiCards() {
         </div>
       </KpiShell>
 
-      <KpiShell icon={ScanLine} label="Inspeccionadas hoy">
+      <KpiShell icon={ScanLine} label="Limones inspeccionados hoy">
         <p className="text-3xl font-semibold text-ink tnum">{inspected.toLocaleString("es")}</p>
-        <p className="text-xs text-ink-faint">piezas procesadas por el modelo</p>
+        <p className="text-xs text-ink-faint">limones procesados por el modelo</p>
       </KpiShell>
 
-      <KpiShell icon={PackageX} label="Rechazadas hoy" accent="text-coral-500">
+      <KpiShell icon={PackageX} label="Limones rechazados hoy" accent="text-coral-500">
         <div className="flex items-baseline gap-2">
           <p className="text-3xl font-semibold text-ink tnum">{rejected.toLocaleString("es")}</p>
           <Badge tone="rejected">{rejectRate.toFixed(1)}% rechazo</Badge>
         </div>
-        <p className="text-xs text-ink-faint">porcentaje de rechazo del dia</p>
+        <p className="text-xs text-ink-faint">porcentaje de rechazo del día</p>
       </KpiShell>
     </div>
   );

@@ -16,7 +16,7 @@ import { mockStatus, mockStats, mockEvents, mockSettings, mockDetections } from 
 
 const SystemContext = createContext(null);
 
-const EMPTY_STATS = { today: { inspected: 0, rejected: 0, rejectRate: 0 }, trend: [], distribution: { ok: 0, defectuosas: 0 } };
+const EMPTY_STATS = { today: { inspected: 0, rejected: 0, rejectRate: 0 }, trend: [], distribution: { ok: 0, defectuosos: 0 } };
 
 export function SystemProvider({ children }) {
   const [status, setStatus] = useState(USE_MOCK_DATA ? mockStatus : null);
@@ -52,9 +52,9 @@ export function SystemProvider({ children }) {
     }
   }, []);
 
-  // El navegador no permite headers custom en WebSocket, asi que el token de
-  // sesion va como query param -- el backend debe leerlo de ahi para
-  // autenticar la conexion (en vez de un header Authorization).
+  // El navegador no permite headers custom en WebSocket, así que el token de
+  // sesión va como query param -- el backend debe leerlo de ahí para
+  // autenticar la conexión (en vez de un header Authorization).
   const token = getStoredToken();
   const wsUrl = USE_MOCK_DATA || !token ? null : `${WS_URL}?token=${encodeURIComponent(token)}`;
   const { connected: wsConnected } = useWebSocket(wsUrl, {
@@ -62,7 +62,7 @@ export function SystemProvider({ children }) {
     enabled: !USE_MOCK_DATA,
   });
 
-  // --- Carga inicial + polling de respaldo si el WS no esta activo ---
+  // --- Carga inicial + polling de respaldo si el WS no está activo ---
   const refreshAll = useCallback(async () => {
     try {
       const [s, st, ev] = await Promise.all([getStatus(), getStats(), getEvents(50)]);

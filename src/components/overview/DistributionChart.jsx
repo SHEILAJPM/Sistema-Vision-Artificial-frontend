@@ -22,17 +22,17 @@ function DonutTooltip({ active, payload }) {
 export function DistributionChart() {
   const { stats } = useSystem();
   const ok = stats?.distribution?.ok ?? 0;
-  const defectuosas = stats?.distribution?.defectuosas ?? 0;
-  const total = ok + defectuosas;
+  const defectuosos = stats?.distribution?.defectuosos ?? 0;
+  const total = ok + defectuosos;
   const data = [
     { name: "OK", value: ok, fill: COLOR_OK },
-    { name: "Defectuosas", value: defectuosas, fill: COLOR_DEFECT },
+    { name: "Defectuosos", value: defectuosos, fill: COLOR_DEFECT },
   ];
   const okPct = total ? Math.round((ok / total) * 100) : 0;
 
   return (
     <Card>
-      <CardHeader title="Distribucion de piezas" subtitle="Proporcion OK vs. defectuosas" />
+      <CardHeader title="Distribución de limones" subtitle="Proporción OK vs. defectuosos" />
       <div className="relative h-64">
         <ResponsiveContainer width="100%" height="100%">
           <PieChart>
@@ -56,12 +56,12 @@ export function DistributionChart() {
         </ResponsiveContainer>
         <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center">
           <p className="text-2xl font-semibold text-ink tnum">{total ? `${okPct}%` : "--"}</p>
-          <p className="text-xs text-ink-faint">piezas OK</p>
+          <p className="text-xs text-ink-faint">limones OK</p>
         </div>
       </div>
       <div className="mt-2 flex items-center justify-center gap-6">
         <LegendDot color={COLOR_OK} label="OK" value={ok} />
-        <LegendDot color={COLOR_DEFECT} label="Defectuosas" value={defectuosas} />
+        <LegendDot color={COLOR_DEFECT} label="Defectuosos" value={defectuosos} />
       </div>
     </Card>
   );

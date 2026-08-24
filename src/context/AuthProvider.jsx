@@ -48,7 +48,7 @@ export function AuthProvider({ children }) {
   }, []);
 
   // Si cualquier request REST recibe 401 (token vencido/revocado a mitad de
-  // sesion), se cierra sesion automaticamente para volver a /login.
+  // sesión), se cierra sesión automáticamente para volver a /login.
   useEffect(() => {
     setUnauthorizedHandler(() => {
       setStoredToken(null);
@@ -59,7 +59,7 @@ export function AuthProvider({ children }) {
 
   const login = useCallback(async (username, password) => {
     if (!username.trim() || !password.trim()) {
-      return { ok: false, error: "Ingresa usuario y contrasena" };
+      return { ok: false, error: "Ingresa usuario y contraseña" };
     }
 
     if (USE_MOCK_DATA) {
@@ -77,7 +77,7 @@ export function AuthProvider({ children }) {
       setUser(res.user ?? { name: username });
       return { ok: true };
     } catch {
-      return { ok: false, error: "Usuario o contrasena incorrectos" };
+      return { ok: false, error: "Usuario o contraseña incorrectos" };
     }
   }, []);
 

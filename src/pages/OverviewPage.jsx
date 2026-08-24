@@ -8,7 +8,7 @@ import { ControlPanel } from "../components/control/ControlPanel.jsx";
 
 export default function OverviewPage() {
   return (
-    <AppShell title="Resumen en vivo" subtitle="Estado actual de la linea de inspeccion">
+    <AppShell title="Resumen en vivo" subtitle="Estado actual de la línea de inspección de limones">
       <KpiCards />
 
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">

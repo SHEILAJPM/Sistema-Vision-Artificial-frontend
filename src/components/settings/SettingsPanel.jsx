@@ -48,7 +48,7 @@ export function SettingsPanel() {
   if (!form) {
     return (
       <Card>
-        <p className="text-sm text-ink-faint">Cargando configuracion del backend...</p>
+        <p className="text-sm text-ink-faint">Cargando configuración del backend...</p>
       </Card>
     );
   }
@@ -83,10 +83,10 @@ export function SettingsPanel() {
       </Card>
 
       <Card>
-        <CardHeader icon={ScanIcon} title="Modelo de inspeccion" subtitle="YOLOv8 y seleccion de camara" />
+        <CardHeader icon={ScanIcon} title="Modelo de inspección" subtitle="YOLOv8 y selección de cámara" />
         <Field
           label="Umbral de confianza"
-          hint="Confianza minima para marcar una pieza como defectuosa"
+          hint="Confianza mínima para marcar un limón como defectuoso"
         >
           <Slider
             value={form.confidenceThreshold}
@@ -97,7 +97,7 @@ export function SettingsPanel() {
             format={(v) => `${Math.round(v * 100)}%`}
           />
         </Field>
-        <Field label="Camara" hint="Fuente de video usada para la inspeccion">
+        <Field label="Cámara" hint="Fuente de video usada para la inspección">
           <select
             className={selectClass}
             value={form.camera}
@@ -113,7 +113,7 @@ export function SettingsPanel() {
       </Card>
 
       <Card>
-        <CardHeader icon={Cable} title="Conexion serial" subtitle="Puerto y velocidad de comunicacion con el Arduino" />
+        <CardHeader icon={Cable} title="Conexión serial" subtitle="Puerto y velocidad de comunicación con el Arduino" />
         <Field label="Puerto serial">
           <select
             className={selectClass}
@@ -144,9 +144,9 @@ export function SettingsPanel() {
 
       <div className="flex items-center gap-3">
         <Button variant="primary" icon={Check} onClick={handleSave}>
-          Guardar configuracion
+          Guardar configuración
         </Button>
-        {saved && <span className="text-xs text-teal-600">Configuracion guardada</span>}
+        {saved && <span className="text-xs text-teal-600">Configuración guardada</span>}
       </div>
     </div>
   );

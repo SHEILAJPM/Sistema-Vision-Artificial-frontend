@@ -5,8 +5,8 @@ const COLORS = {
   info: "bg-blue-500",
 };
 
-// Punto de estado con pulso sutil para indicar actividad en vivo (conexion,
-// banda en marcha, etc). El pulso es una animacion de opacidad, sin brillo.
+// Punto de estado con pulso sutil para indicar actividad en vivo (conexión,
+// banda en marcha, etc). El pulso es una animación de opacidad, sin brillo.
 export function StatDot({ tone = "idle", pulse = false, label }) {
   return (
     <span className="inline-flex items-center gap-2">

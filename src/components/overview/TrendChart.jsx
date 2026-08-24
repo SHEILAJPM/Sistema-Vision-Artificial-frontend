@@ -2,8 +2,8 @@ import { Line, LineChart, CartesianGrid, XAxis, YAxis, Tooltip, Legend, Responsi
 import { Card, CardHeader } from "../ui/Card.jsx";
 import { useSystem } from "../../context/SystemProvider.jsx";
 
-// Colores de la paleta validada (ver documento de diseno): azul = OK /
-// inspeccionadas, coral = rechazadas. Es el unico par usado para identidad
+// Colores de la paleta validada (ver documento de diseño): azul = OK /
+// inspeccionadas, coral = rechazadas. Es el único par usado para identidad
 // de datos porque es el que separa con seguridad bajo daltonismo.
 const COLOR_INSPECTED = "#4273B0";
 const COLOR_REJECTED = "#CA5551";
@@ -32,7 +32,7 @@ export function TrendChart() {
 
   return (
     <Card>
-      <CardHeader title="Inspeccionadas vs. rechazadas" subtitle="Ultimas horas de operacion" />
+      <CardHeader title="Limones inspeccionados vs. rechazados" subtitle="Últimas horas de operación" />
       <div className="h-64">
         <ResponsiveContainer width="100%" height="100%">
           <LineChart data={data} margin={{ top: 4, right: 8, left: 0, bottom: 0 }}>
@@ -62,7 +62,7 @@ export function TrendChart() {
             <Line
               type="monotone"
               dataKey="inspeccionadas"
-              name="Inspeccionadas"
+              name="Inspeccionados"
               stroke={COLOR_INSPECTED}
               strokeWidth={2}
               dot={false}
@@ -71,7 +71,7 @@ export function TrendChart() {
             <Line
               type="monotone"
               dataKey="rechazadas"
-              name="Rechazadas"
+              name="Rechazados"
               stroke={COLOR_REJECTED}
               strokeWidth={2}
               dot={false}

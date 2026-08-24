@@ -46,17 +46,17 @@ export default function LoginPage() {
 
         <div className="max-w-sm">
           <p className="text-2xl font-semibold text-white leading-snug">
-            Monitoreo y control de la linea de inspeccion visual.
+            Monitoreo y control de la línea de inspección de calidad de limones.
           </p>
           <p className="text-sm text-blue-50/90 mt-3 leading-relaxed">
-            Banda transportadora, iluminacion, servo de rechazo y deteccion de defectos
-            con YOLOv8, en un solo panel — de la cosecha en Piura a la linea de empaque.
+            Banda transportadora, iluminación, servo de rechazo y detección de defectos
+            con YOLOv8, en un solo panel — de la cosecha en Piura a la línea de empaque.
           </p>
 
           <div className="mt-7 max-w-[380px] overflow-hidden rounded-2xl border border-white/15 shadow-card-hover">
-            <img src={harvestPhoto} alt="Cosecha de limon en Piura" className="block h-auto w-full" />
+            <img src={harvestPhoto} alt="Cosecha de limón en Piura" className="block h-auto w-full" />
           </div>
-          <p className="mt-2.5 text-xs text-blue-50/60">Cosecha de limon, Piura — Peru</p>
+          <p className="mt-2.5 text-xs text-blue-50/60">Cosecha de limón, Piura — Perú</p>
         </div>
 
         <p className="text-xs text-blue-50/70">Acceso restringido a personal autorizado de planta</p>
@@ -69,7 +69,7 @@ export default function LoginPage() {
             <div className="flex lg:hidden h-10 w-10 items-center justify-center rounded-xl bg-blue-500 text-white mb-4">
               <ScanEye size={20} strokeWidth={2} />
             </div>
-            <h1 className="text-xl font-semibold text-ink">Iniciar sesion</h1>
+            <h1 className="text-xl font-semibold text-ink">Iniciar sesión</h1>
             <p className="text-sm text-ink-faint mt-1 text-center lg:text-left">
               Ingresa tus credenciales para acceder al panel
             </p>
@@ -77,7 +77,7 @@ export default function LoginPage() {
 
           {USE_MOCK_DATA && (
             <div className="mb-5 rounded-lg border border-blue-100 bg-blue-50 px-3.5 py-2.5 text-xs text-blue-700">
-              Modo demo: cualquier usuario y contrasena funcionan.
+              Modo demo: cualquier usuario y contraseña funcionan.
             </div>
           )}
 
@@ -107,7 +107,7 @@ export default function LoginPage() {
 
             <div>
               <label htmlFor="password" className="mb-1.5 block text-xs font-medium text-ink-soft">
-                Contrasena
+                Contraseña
               </label>
               <div className="relative">
                 <input
@@ -123,7 +123,7 @@ export default function LoginPage() {
                   type="button"
                   onClick={() => setShowPassword((v) => !v)}
                   className="focus-ring absolute right-3 top-1/2 -translate-y-1/2 text-ink-faint hover:text-ink-soft"
-                  aria-label={showPassword ? "Ocultar contrasena" : "Mostrar contrasena"}
+                  aria-label={showPassword ? "Ocultar contraseña" : "Mostrar contraseña"}
                 >
                   {showPassword ? <EyeOff size={16} strokeWidth={2} /> : <Eye size={16} strokeWidth={2} />}
                 </button>
