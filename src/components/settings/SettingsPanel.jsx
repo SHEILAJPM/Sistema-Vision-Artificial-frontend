@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { Toast, ToastContainer, Placeholder } from "react-bootstrap";
 import { Check, Gauge, ScanEye as ScanIcon, Cable } from "lucide-react";
 import { Card, CardHeader } from "../ui/Card.jsx";
 import { Button } from "../ui/Button.jsx";
@@ -26,7 +27,7 @@ function Slider({ value, onChange, min, max, step, format }) {
         step={step}
         value={value}
         onChange={(e) => onChange(Number(e.target.value))}
-        className="w-full accent-blue-500"
+        className="w-full accent-green-500"
       />
       <span className="w-16 shrink-0 text-right text-sm font-medium text-ink tnum">{format(value)}</span>
     </div>
@@ -47,9 +48,18 @@ export function SettingsPanel() {
 
   if (!form) {
     return (
-      <Card>
-        <p className="text-sm text-ink-faint">Cargando configuración del backend...</p>
-      </Card>
+      <div className="space-y-6">
+        {[100, 85, 70].map((width, i) => (
+          <Card key={i}>
+            <Placeholder as="p" animation="glow" className="mb-4">
+              <Placeholder xs={3} size="sm" style={{ borderRadius: 6 }} />
+            </Placeholder>
+            <Placeholder as="div" animation="glow">
+              <Placeholder xs={width > 90 ? 12 : width > 75 ? 9 : 6} style={{ height: 14, borderRadius: 6 }} />
+            </Placeholder>
+          </Card>
+        ))}
+      </div>
     );
   }
 
@@ -146,8 +156,27 @@ export function SettingsPanel() {
         <Button variant="primary" icon={Check} onClick={handleSave}>
           Guardar configuración
         </Button>
-        {saved && <span className="text-xs text-teal-600">Configuración guardada</span>}
       </div>
+
+      {/* Sin la prop `position` de ToastContainer: internamente genera clases de
+          posicionamiento de Bootstrap (position-fixed, bottom-0, end-0) que
+          viven en helpers.scss -- justo el módulo que no se importa porque
+          colisiona con las utilidades de Tailwind. Mismo resultado con estilo inline. */}
+      <ToastContainer className="p-4" style={{ position: "fixed", bottom: 0, right: 0, zIndex: 1080 }}>
+        <Toast onClose={() => setSaved(false)} show={saved} delay={2500} autohide>
+          <Toast.Body className="flex items-center gap-2 text-teal-600">
+            {/* Mismo anillo pulsante que el punto "en vivo" del último dato de
+                TrendChart (animate-radar-ping) -- acá marca el momento puntual
+                de "guardado", no un estado continuo, pero reusa el mismo
+                vocabulario en vez de inventar una animación de éxito nueva. */}
+            <span className="relative flex h-[15px] w-[15px] shrink-0 items-center justify-center">
+              <Check size={15} strokeWidth={2.5} className="relative" />
+              <span className="absolute inset-0 rounded-full bg-teal-500/40 animate-radar-ping" />
+            </span>
+            Configuración guardada
+          </Toast.Body>
+        </Toast>
+      </ToastContainer>
     </div>
   );
 }

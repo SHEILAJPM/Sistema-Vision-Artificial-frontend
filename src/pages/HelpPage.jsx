@@ -1,6 +1,7 @@
+import { Accordion } from "react-bootstrap";
 import { ScanLine, Lightbulb, Wrench, Cable, Cpu, TriangleAlert } from "lucide-react";
 import { AppShell } from "../components/layout/AppShell.jsx";
-import { Card, CardHeader } from "../components/ui/Card.jsx";
+import { Card } from "../components/ui/Card.jsx";
 
 const FAQ = [
   {
@@ -33,17 +34,26 @@ const FAQ = [
 export default function HelpPage() {
   return (
     <AppShell title="Ayuda" subtitle="Preguntas frecuentes sobre la operación del sistema">
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {FAQ.map(({ icon, q, a }) => (
-          <Card key={q}>
-            <CardHeader icon={icon} title={q} />
-            <p className="text-sm text-ink-soft leading-relaxed">{a}</p>
-          </Card>
-        ))}
+      <div className="panel-card overflow-hidden">
+        <Accordion alwaysOpen={false} flush>
+          {FAQ.map(({ icon: Icon, q, a }, i) => (
+            <Accordion.Item eventKey={String(i)} key={q} className="border-line">
+              <Accordion.Header>
+                <span className="flex items-center gap-2.5">
+                  <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-green-50 text-green-600">
+                    <Icon size={14} strokeWidth={2} />
+                  </span>
+                  <span className="text-sm font-semibold text-ink">{q}</span>
+                </span>
+              </Accordion.Header>
+              <Accordion.Body className="text-sm text-ink-soft leading-relaxed pt-0">{a}</Accordion.Body>
+            </Accordion.Item>
+          ))}
+        </Accordion>
       </div>
 
       <Card className="flex items-start gap-3">
-        <TriangleAlert size={18} className="text-coral-500 shrink-0 mt-0.5" strokeWidth={2} />
+        <TriangleAlert size={18} className="text-terracotta-500 shrink-0 mt-0.5" strokeWidth={2} />
         <div>
           <p className="text-sm font-medium text-ink">Antes de una parada de emergencia</p>
           <p className="text-sm text-ink-soft mt-1 leading-relaxed">
