@@ -14,3 +14,13 @@ Thumbs.db
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+
+# Configuracion/artefactos de asistentes de IA -- locales para quien este
+# usando la herramienta, nunca versionados en el repo compartido.
+.claude
+.agents
+.codex
+.impeccable
+skills-lock.json
+CLAUDE.md
+DESIGN.md
