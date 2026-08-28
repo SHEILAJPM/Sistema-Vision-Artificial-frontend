@@ -21,25 +21,112 @@
 
 @layer components {
   .panel-card {
-    @apply bg-canvas border border-line rounded-2xl shadow-card;
+    @apply bg-panel border border-line rounded-2xl shadow-card;
   }
 
   .focus-ring {
-    @apply outline-none focus-visible:ring-2 focus-visible:ring-blue-400 focus-visible:ring-offset-2 focus-visible:ring-offset-canvas;
+    @apply outline-none focus-visible:ring-2 focus-visible:ring-green-400 focus-visible:ring-offset-2 focus-visible:ring-offset-canvas;
+  }
+}
+
+/* grow-y y breathe: usadas solo desde `style={{ animation: "..." }}` inline
+   en KpiCards.jsx (el sparkline del hero combina "crece al montar" +
+   "respira" a mano, porque las clases `animate-*` de Tailwind pisan el
+   shorthand `animation` completo y no se pueden apilar dos por className).
+   Definidas ACA a proposito, no en tailwind.config.js: el JIT de Tailwind
+   solo emite el @keyframes de una entrada de `theme.keyframes` si detecta
+   la clase `animate-<nombre>` como texto literal en el codigo escaneado, y
+   ese literal nunca aparece porque el nombre llega dentro de un string de
+   `animation`, no de `className`. Vivian en tailwind.config.js antes y el
+   build las descartaba en silencio (verificado grepeando el CSS generado,
+   no solo leyendo la config) -- el sparkline nunca crecio ni respiro
+   (hallazgo de /impeccable critique). */
+@keyframes grow-y {
+  0% { transform: scaleY(0); }
+  100% { transform: scaleY(1); }
+}
+@keyframes breathe {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.55; }
+}
+
+/* Trazo de las mini-líneas de tendencia (KpiCards) dibujándose al montar --
+   mismo motivo que grow-y/breathe de arriba: el largo del `path` es dinámico
+   (depende de los datos), así que la animación se arma con `style` inline,
+   no con una clase `animate-*` -- va acá para que el JIT no la descarte. */
+@keyframes draw-line {
+  from { stroke-dashoffset: var(--line-length, 240); }
+  to { stroke-dashoffset: 0; }
+}
+
+/* Panel de control manual: acabado "metal cepillado" sutil para que se lea
+   como override físico del Arduino, no como otra tarjeta blanca más. Franjas
+   finas repetidas (el cepillado) + un brillo diagonal que barre lento y
+   constante (linear, igual que scan/shimmer: nunca frena) -- movimiento
+   ambiente de bajo amplitud, no un efecto que se dispara una vez. Vive como
+   clase de componente (no utilidades de Tailwind) porque necesita
+   pseudo-elementos con mix-blend-mode. */
+.control-metal {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  background:
+    linear-gradient(135deg, #DFDED6 0%, #CBCAC0 42%, #D9D8CE 55%, #C2C1B6 100%);
+}
+.control-metal::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: repeating-linear-gradient(
+    97deg,
+    rgba(255, 255, 255, 0.45) 0px,
+    rgba(255, 255, 255, 0.45) 1px,
+    transparent 1px,
+    transparent 3px
+  );
+  mix-blend-mode: overlay;
+  opacity: 0.6;
+  pointer-events: none;
+}
+.control-metal::after {
+  content: "";
+  position: absolute;
+  inset: -60% -20%;
+  background: linear-gradient(75deg, transparent 42%, rgba(255, 255, 255, 0.55) 50%, transparent 58%);
+  animation: metal-sheen 7s linear infinite;
+  pointer-events: none;
+}
+@keyframes metal-sheen {
+  0% { transform: translateX(-35%); }
+  100% { transform: translateX(35%); }
+}
+
+/* El panel corre bastante movimiento ambiente en simultáneo ahora (líneas de
+   escaneo, respiración de esquinas/anillos, ping en íconos activos, banda
+   transportadora, blobs flotando) -- gente con sensibilidad al movimiento
+   necesita poder apagarlo. No se llega literalmente a cero: las duraciones
+   quedan casi instantáneas en vez de display:none, así que las transiciones
+   que dependen de un evento `transitionend` (los Fade/Collapse de Bootstrap)
+   siguen funcionando, solo dejan de percibirse como movimiento. */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
   }
 }
 
 /* Slim, quiet scrollbars that match the muted palette */
 * {
   scrollbar-width: thin;
-  scrollbar-color: #D6D3C8 transparent;
+  scrollbar-color: #C9B98D transparent;
 }
 *::-webkit-scrollbar {
   width: 8px;
   height: 8px;
 }
 *::-webkit-scrollbar-thumb {
-  background-color: #D6D3C8;
+  background-color: #C9B98D;
   border-radius: 8px;
 }
 *::-webkit-scrollbar-track {
