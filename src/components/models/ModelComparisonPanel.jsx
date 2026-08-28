@@ -1,11 +1,29 @@
-import { useCallback, useEffect, useState } from "react";
+import { useState } from "react";
+import { Fade, Spinner, ProgressBar, Placeholder } from "react-bootstrap";
 import { Cpu, GitCompare, Layers, Check, TriangleAlert } from "lucide-react";
 import { Card, CardHeader } from "../ui/Card.jsx";
 import { StatDot } from "../ui/StatDot.jsx";
-import { getModelStatus, postModelSelect, getModelComparison, USE_MOCK_DATA } from "../../lib/api.js";
-import { mockModelStatus, mockModelComparison } from "../../data/mockData.js";
+import { useSystem } from "../../context/SystemProvider.jsx";
+import { useCountUp } from "../../lib/useCountUp.js";
 
-const POLL_MS = 4000;
+// Antes del primer refreshModel(), porModelo esta vacio y cada celda mostraba
+// "--" -- igual que un modelo que de verdad nunca proceso nada. Filas
+// placeholder mientras carga, "--" real solo despues (cuando ya sabemos que
+// ese modelo no tiene datos).
+function ModelRowSkeleton({ label }) {
+  return (
+    <tr className="border-b border-line last:border-0">
+      <td className="px-5 py-2.5 font-medium text-ink">{label}</td>
+      {Array.from({ length: 4 }).map((_, i) => (
+        <td key={i} className="px-3 py-2.5 text-right">
+          <Placeholder as="div" animation="glow" className="flex justify-end">
+            <Placeholder xs={4} size="sm" style={{ height: 10, borderRadius: 6 }} />
+          </Placeholder>
+        </td>
+      ))}
+    </tr>
+  );
+}
 
 const MODEL_OPTIONS = [
   { value: "A", label: "Modelo A", hint: "YOLOv8 - detección y localización" },
@@ -15,48 +33,20 @@ const MODEL_OPTIONS = [
 
 // Página "Modelos de IA": permite elegir cuál modelo evalúa cada limón (o
 // correr los dos en paralelo) y muestra métricas comparativas calculadas por
-// el backend a partir del historial de inspecciones. Se mantiene con su
-// propio polling en vez de vivir en SystemProvider porque no es parte del
-// estado "en vivo" que necesita el resto del dashboard.
+// el backend a partir del historial de inspecciones. El estado y el polling
+// viven en SystemProvider (LiveFeed también los necesita para adaptar el
+// overlay de detección al modelo activo), este componente solo lo consume.
 export function ModelComparisonPanel() {
-  const [modelStatus, setModelStatus] = useState(USE_MOCK_DATA ? mockModelStatus : null);
-  const [comparison, setComparison] = useState(USE_MOCK_DATA ? mockModelComparison : null);
-  const [pending, setPending] = useState(false);
+  const { modelStatus, modelComparison: comparison, modelLoaded, selectModel } = useSystem();
+  const [pending, setPending] = useState(null); // valor del modelo que se está seleccionando, o null
   const [error, setError] = useState(null);
 
-  const refresh = useCallback(async () => {
-    if (USE_MOCK_DATA) return;
-    try {
-      const [st, cmp] = await Promise.all([getModelStatus(), getModelComparison()]);
-      setModelStatus(st);
-      setComparison(cmp);
-      setError(null);
-    } catch (err) {
-      setError(err.message);
-    }
-  }, []);
-
-  useEffect(() => {
-    if (USE_MOCK_DATA) return undefined;
-    refresh();
-    const id = setInterval(refresh, POLL_MS);
-    return () => clearInterval(id);
-  }, [refresh]);
-
   const handleSelect = async (modelo) => {
-    if (USE_MOCK_DATA) {
-      setModelStatus((prev) => ({ ...prev, seleccion_activa: modelo }));
-      return;
-    }
-    setPending(true);
-    try {
-      await postModelSelect(modelo);
-      await refresh();
-    } catch (err) {
-      setError(err.message);
-    } finally {
-      setPending(false);
-    }
+    setPending(modelo);
+    const res = await selectModel(modelo);
+    if (!res.ok) setError(res.error);
+    else setError(null);
+    setPending(null);
   };
 
   const activo = modelStatus?.seleccion_activa;
@@ -66,19 +56,19 @@ export function ModelComparisonPanel() {
   return (
     <div className="space-y-6">
       {error && (
-        <div className="flex items-center gap-2 rounded-lg border border-coral-100 bg-coral-50 px-3.5 py-2.5 text-xs text-coral-600">
+        <div className="flex items-center gap-2 rounded-lg border border-terracotta-100 bg-terracotta-50 px-3.5 py-2.5 text-xs text-terracotta-600">
           <TriangleAlert size={14} strokeWidth={2} className="shrink-0" />
           {error}
         </div>
       )}
 
-      {modelStatus?.modo_respaldo_heuristico && (
-        <div className="flex items-center gap-2 rounded-lg border border-beige-100 bg-beige-50 px-3.5 py-2.5 text-xs text-beige-600">
+      <Fade in={!!modelStatus?.modo_respaldo_heuristico} unmountOnExit>
+        <div className="flex items-center gap-2 rounded-lg border border-gold-100 bg-gold-50 px-3.5 py-2.5 text-xs text-gold-600">
           <TriangleAlert size={14} strokeWidth={2} className="shrink-0" />
           Ningún modelo entrenado está cargado; el sistema está usando el modelo heurístico de
           respaldo (sin pesos) para poder seguir probando banda, luz y servo.
         </div>
-      )}
+      </Fade>
 
       <Card>
         <CardHeader
@@ -89,21 +79,26 @@ export function ModelComparisonPanel() {
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
           {MODEL_OPTIONS.map((opt) => {
             const isActive = activo === opt.value;
+            const isPending = pending === opt.value;
             return (
               <button
                 key={opt.value}
                 type="button"
-                disabled={pending}
+                disabled={!!pending}
                 onClick={() => handleSelect(opt.value)}
-                className={`focus-ring rounded-xl border px-4 py-3.5 text-left transition-colors duration-150 disabled:opacity-40 ${
-                  isActive ? "border-blue-500 bg-blue-50" : "border-line bg-canvas hover:border-line-strong"
+                className={`focus-ring rounded-xl border px-4 py-3.5 text-left transition-[background-color,border-color,color,transform] duration-150 active:scale-[0.97] disabled:opacity-40 ${
+                  isActive ? "border-green-500 bg-green-50" : "border-line bg-canvas hover:border-line-strong"
                 }`}
               >
                 <div className="flex items-center justify-between">
-                  <span className={`text-sm font-medium ${isActive ? "text-blue-700" : "text-ink"}`}>
+                  <span className={`text-sm font-medium ${isActive ? "text-green-700" : "text-ink"}`}>
                     {opt.label}
                   </span>
-                  {isActive && <Check size={15} className="text-blue-600" strokeWidth={2.5} />}
+                  {isPending ? (
+                    <Spinner animation="border" size="sm" role="status" className="text-green-500" />
+                  ) : (
+                    isActive && <Check size={15} className="text-green-600" strokeWidth={2.5} />
+                  )}
                 </div>
                 <p className="text-xs text-ink-faint mt-1">{opt.hint}</p>
               </button>
@@ -133,6 +128,20 @@ export function ModelComparisonPanel() {
             icon={Layers}
             title="Comparación por modelo"
             subtitle="Calculado sobre el historial de inspecciones"
+            action={
+              // Honesto, no decorativo: refreshModel() en SystemProvider
+              // repolla estos números cada 4s (MODEL_POLL_MS), así que esta
+              // tabla de verdad se recalcula sola -- mismo motivo (y mismo
+              // componente) que "En vivo" en EventsTable/LiveFeed.
+              modelLoaded && (
+                <span className="inline-flex items-center gap-1.5 rounded-full border border-green-100 bg-green-50 px-2.5 py-0.5 text-[11px] font-semibold uppercase tracking-wide text-green-700">
+                  <span className="relative flex h-1.5 w-1.5">
+                    <span className="inline-flex h-1.5 w-1.5 rounded-full bg-green-500 animate-pulse-soft" />
+                  </span>
+                  En vivo
+                </span>
+              )
+            }
           />
         </div>
         <div className="overflow-x-auto">
@@ -147,14 +156,44 @@ export function ModelComparisonPanel() {
               </tr>
             </thead>
             <tbody>
-              {["A", "B"].map((key) => {
+              {!modelLoaded && (
+                <>
+                  <ModelRowSkeleton label="Modelo A" />
+                  <ModelRowSkeleton label="Modelo B" />
+                </>
+              )}
+              {modelLoaded && ["A", "B"].map((key) => {
                 const row = porModelo[key];
                 return (
                   <tr key={key} className="border-b border-line last:border-0">
                     <td className="px-5 py-2.5 font-medium text-ink">Modelo {key}</td>
                     <td className="px-3 py-2.5 text-right text-ink-soft tnum">{row?.inspecciones ?? "--"}</td>
                     <td className="px-3 py-2.5 text-right text-ink-soft tnum">
-                      {row ? `${Math.round(row.confianza_promedio * 100)}%` : "--"}
+                      {row ? (
+                        <div className="flex items-center justify-end gap-2">
+                          {/* `variant` de react-bootstrap no sirve acá: genera
+                              clases bg-primary/bg-danger que solo existen en
+                              utilities.scss de Bootstrap, y ese partial está
+                              excluido a propósito (colisiona con las
+                              utilidades de Tailwind, ver bootstrap-custom.scss)
+                              -- todas las barras caían al mismo color por
+                              defecto sin importar la variante. Color explícito
+                              en vez de eso; verde/dorado en vez de verde/
+                              terracota porque esto compara Modelo A vs B, no
+                              es la identidad OK-vs-Defectuoso (regla de los
+                              Dos Pares, ver DESIGN.md) -- terracota ahí
+                              insinuaría que el Modelo B es "malo". */}
+                          <ProgressBar style={{ height: 5, width: 56 }}>
+                            <ProgressBar
+                              now={row.confianza_promedio * 100}
+                              style={{ backgroundColor: key === "A" ? "#2F5233" : "#C6952A" }}
+                            />
+                          </ProgressBar>
+                          <span>{Math.round(row.confianza_promedio * 100)}%</span>
+                        </div>
+                      ) : (
+                        "--"
+                      )}
                     </td>
                     <td className="px-3 py-2.5 text-right text-ink-soft tnum">
                       {row ? `${row.latencia_promedio_ms.toFixed(0)} ms` : "--"}
@@ -177,14 +216,19 @@ export function ModelComparisonPanel() {
           subtitle="Solo cuenta limones evaluados por ambos modelos"
         />
         {acuerdo && acuerdo.piezas_evaluadas_por_ambos > 0 ? (
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-            <Stat label="Limones comparados" value={acuerdo.piezas_evaluadas_por_ambos} />
-            <Stat label="Coincidencias" value={acuerdo.coincidencias} />
-            <Stat label="Discrepancias" value={acuerdo.discrepancias} accent="text-coral-500" />
-            <Stat label="% de acuerdo" value={`${acuerdo.porcentaje_acuerdo}%`} />
+          <div key="stats" className="space-y-5 animate-fade-up">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+              <Stat label="Limones comparados" value={acuerdo.piezas_evaluadas_por_ambos} />
+              <Stat label="Coincidencias" value={acuerdo.coincidencias} />
+              <Stat label="Discrepancias" value={acuerdo.discrepancias} accent="text-terracotta-500" />
+              <Stat label="% de acuerdo" value={acuerdo.porcentaje_acuerdo} suffix="%" />
+            </div>
+            <ProgressBar style={{ height: 8 }}>
+              <ProgressBar now={acuerdo.porcentaje_acuerdo} animated style={{ backgroundColor: "#2F5233" }} />
+            </ProgressBar>
           </div>
         ) : (
-          <p className="text-sm text-ink-faint">
+          <p key="placeholder" className="text-sm text-ink-faint animate-fade-up">
             Selecciona "Comparar ambos" y deja pasar algunos limones para ver métricas de acuerdo.
           </p>
         )}
@@ -203,15 +247,19 @@ function ModelStatusCard({ label, hint, loaded, error }) {
         </div>
         <StatDot tone={loaded ? "ok" : "idle"} pulse={loaded} label={loaded ? "Cargado" : "No cargado"} />
       </div>
-      {error && <p className="text-xs text-coral-500 mt-1">{error}</p>}
+      {error && <p className="text-xs text-terracotta-500 mt-1">{error}</p>}
     </Card>
   );
 }
 
-function Stat({ label, value, accent = "text-ink" }) {
+function Stat({ label, value, suffix = "", accent = "text-ink" }) {
+  const animated = useCountUp(value);
   return (
     <div>
-      <p className={`text-2xl font-semibold tnum ${accent}`}>{value}</p>
+      <p className={`text-2xl font-semibold tnum ${accent}`}>
+        {Math.round(animated)}
+        {suffix}
+      </p>
       <p className="text-xs text-ink-faint mt-0.5">{label}</p>
     </div>
   );
