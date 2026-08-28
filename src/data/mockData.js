@@ -29,6 +29,7 @@ export const mockStats = {
   distribution: mockDistribution,
 };
 
+const MODEL_CYCLE = ["A", "B", "ambos"];
 export const mockEvents = Array.from({ length: 14 }).map((_, i) => {
   const isRejected = i % 5 === 0;
   const minutesAgo = i * 3;
@@ -40,6 +41,7 @@ export const mockEvents = Array.from({ length: 14 }).map((_, i) => {
     action: isRejected ? "Servo activado" : "Sin acción",
     confidence: isRejected ? 0.88 + (i % 3) * 0.02 : 0.95 + (i % 4) * 0.01,
     thumbnail: null,
+    model: MODEL_CYCLE[i % MODEL_CYCLE.length],
   };
 });
 

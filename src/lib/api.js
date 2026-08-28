@@ -63,7 +63,9 @@ export const postControl = (command, payload = {}) =>
 // GET /api/stats -> { today, trend, distribution }
 export const getStats = () => request("/api/stats");
 
-// GET /api/events?limit=50 -> [{ id, timestamp, result, action, thumbnail }]
+// GET /api/events?limit=50 -> [{ id, timestamp, result, action, confidence, thumbnail, model? }]
+// `model` ("A" | "B" | "ambos") es opcional -- si el backend lo manda, la
+// tabla de eventos muestra qué modelo decidió cada pieza; si no, oculta la columna.
 export const getEvents = (limit = 50) => request(`/api/events?limit=${limit}`);
 
 // GET /api/settings -> { pwmSpeed, confidenceThreshold, camera, cameras, serialPort, baudrate, ports }
