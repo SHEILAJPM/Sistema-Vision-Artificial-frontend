@@ -1,35 +1,76 @@
+import { useMemo, useState } from "react";
+import { History, CheckCircle2, PackageX } from "lucide-react";
 import { AppShell } from "../components/layout/AppShell.jsx";
 import { EventsTable } from "../components/overview/EventsTable.jsx";
-import { Card } from "../components/ui/Card.jsx";
+import { EventsFilterBar } from "../components/overview/EventsFilterBar.jsx";
+import { StatCard } from "../components/ui/StatCard.jsx";
+import { HeroKpi } from "../components/ui/HeroKpi.jsx";
 import { useSystem } from "../context/SystemProvider.jsx";
+import { filterEventsByDate, eventsToCsv, downloadCsv } from "../lib/eventsExport.js";
+import { useCountUp } from "../lib/useCountUp.js";
 
 export default function HistoryPage() {
   const { events, stats } = useSystem();
-  const total = events.length;
-  const ok = events.filter((e) => e.result === "ok").length;
+  const [dateFrom, setDateFrom] = useState("");
+  const [dateTo, setDateTo] = useState("");
+
+  const filtered = useMemo(() => filterEventsByDate(events, dateFrom, dateTo), [events, dateFrom, dateTo]);
+  const total = filtered.length;
+  const ok = filtered.filter((e) => e.result === "ok").length;
+  const rejectRate = stats?.today?.rejectRate ?? 0;
+
+  const animatedOk = useCountUp(ok);
+  const animatedRejectRate = useCountUp(rejectRate);
+  // Sin filtro de fecha, esta lista sigue creciendo con cada evento nuevo que
+  // llega por WebSocket (mismo `events` que consume Resumen en vivo). La
+  // línea de tendencia del hero solo se muestra en ese caso -- con un rango
+  // fijo elegido a mano, el sparkline de "hoy por hora" ya no describiría el
+  // número que se está mostrando, y eso sería mentir sobre los datos.
+  const isLiveView = !dateFrom && !dateTo;
+  const trend = stats?.trend ?? [];
+  const volumeTrend = trend.map((t) => ({ total: (t.inspeccionadas ?? 0) + (t.rechazadas ?? 0) }));
 
   return (
     <AppShell title="Historial de inspecciones" subtitle="Registro completo de limones procesados por el sistema">
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <Card>
-          <p className="text-xs uppercase tracking-wide text-ink-faint mb-1">Eventos en pantalla</p>
-          <p className="text-2xl font-semibold text-ink tnum">{total}</p>
-        </Card>
-        <Card>
-          <p className="text-xs uppercase tracking-wide text-ink-faint mb-1">OK</p>
-          <p className="text-2xl font-semibold text-ink tnum">{ok}</p>
-        </Card>
-        <Card>
-          <p className="text-xs uppercase tracking-wide text-ink-faint mb-1">Rechazo acumulado hoy</p>
-          <p className="text-2xl font-semibold text-ink tnum">{(stats?.today?.rejectRate ?? 0).toFixed(1)}%</p>
-        </Card>
+      {/* 3 tarjetas del mismo ancho era el layout mas generico posible para
+          este resumen -- "Eventos en pantalla" pasa a hero (mismo componente
+          que ya usan Resumen en vivo y Rechazados) porque es la cifra que
+          resume a las otras dos, no una mas del montón. */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
+        <HeroKpi
+          span="sm:col-span-2"
+          tone="green"
+          icon={History}
+          label="Eventos en pantalla"
+          value={total}
+          caption={isLiveView ? "se actualiza con cada evento nuevo" : "según el rango de fechas elegido"}
+          trendKey="total"
+          trend={isLiveView ? volumeTrend : []}
+        />
+        <StatCard icon={CheckCircle2} label="OK" tone="green">
+          <p className="text-2xl font-semibold text-ink tnum">{Math.round(animatedOk)}</p>
+        </StatCard>
+        <StatCard icon={PackageX} label="Rechazo acumulado hoy" tone="terracotta">
+          <p className="text-2xl font-semibold text-ink tnum">{animatedRejectRate.toFixed(1)}%</p>
+        </StatCard>
       </div>
 
+      <EventsFilterBar
+        dateFrom={dateFrom}
+        dateTo={dateTo}
+        onDateFromChange={setDateFrom}
+        onDateToChange={setDateTo}
+        exportDisabled={filtered.length === 0}
+        onExport={() => downloadCsv(eventsToCsv(filtered), "historial-inspecciones.csv")}
+      />
+
       <EventsTable
+        events={filtered}
         limit={100}
         showDate
         title="Todos los eventos"
         subtitle="Limones inspeccionados, más recientes primero"
+        emptyMessage="Ningún evento en el rango de fechas seleccionado."
       />
     </AppShell>
   );
