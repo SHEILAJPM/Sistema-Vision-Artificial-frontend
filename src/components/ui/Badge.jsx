@@ -3,11 +3,11 @@
 // con daltonismo. "info" (teal) queda solo para estados unicos que nunca se
 // muestran junto a "rejected" en la misma vista (ver notas de paleta).
 const TONES = {
-  ok: "bg-blue-50 text-blue-700 border-blue-100",
-  rejected: "bg-coral-50 text-coral-600 border-coral-100",
+  ok: "bg-green-50 text-green-700 border-green-100",
+  rejected: "bg-terracotta-50 text-terracotta-600 border-terracotta-100",
   neutral: "bg-panel-alt text-ink-soft border-line",
   info: "bg-teal-50 text-teal-600 border-teal-100",
-  warn: "bg-beige-50 text-beige-600 border-beige-100",
+  warn: "bg-gold-50 text-gold-600 border-gold-100",
 };
 
 export function Badge({ tone = "neutral", children, className = "" }) {

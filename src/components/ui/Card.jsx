@@ -11,7 +11,7 @@ export function CardHeader({ title, subtitle, action, icon: Icon }) {
     <div className="flex items-start justify-between gap-4 mb-4">
       <div className="flex items-start gap-2.5">
         {Icon && (
-          <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-blue-50 text-blue-600">
+          <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-green-50 text-green-600">
             <Icon size={14} strokeWidth={2} />
           </span>
         )}

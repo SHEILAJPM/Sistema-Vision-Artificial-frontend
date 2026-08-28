@@ -1,8 +1,9 @@
 const COLORS = {
   ok: "bg-teal-500",
-  rejected: "bg-coral-500",
+  rejected: "bg-terracotta-500",
   idle: "bg-ink-faint",
   info: "bg-blue-500",
+  gold: "bg-gold-500",
 };
 
 // Punto de estado con pulso sutil para indicar actividad en vivo (conexión,
