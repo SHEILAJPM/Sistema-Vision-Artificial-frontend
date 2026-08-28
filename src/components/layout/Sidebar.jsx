@@ -1,16 +1,32 @@
 import { NavLink, useNavigate } from "react-router-dom";
-import { LayoutGrid, History, PackageX, Cpu, SlidersHorizontal, CircleHelp, ScanEye, LogOut } from "lucide-react";
+import { OverlayTrigger, Tooltip } from "react-bootstrap";
+import { LayoutGrid, History, PackageX, Cpu, SlidersHorizontal, CircleHelp, Leaf, LogOut } from "lucide-react";
 import { useSystem } from "../../context/SystemProvider.jsx";
 import { useAuth } from "../../context/AuthProvider.jsx";
 import { StatDot } from "../ui/StatDot.jsx";
 
-const NAV_ITEMS = [
-  { to: "/", label: "Resumen en vivo", icon: LayoutGrid, end: true },
-  { to: "/historial", label: "Historial de inspecciones", icon: History },
-  { to: "/rechazadas", label: "Limones rechazados", icon: PackageX },
-  { to: "/modelos-ia", label: "Modelos de IA", icon: Cpu },
-  { to: "/configuracion", label: "Configuración", icon: SlidersHorizontal },
-  { to: "/ayuda", label: "Ayuda", icon: CircleHelp },
+// El rail colapsa a solo-ícono en tablet (ver comentario del <aside> mas
+// abajo): sin el label visible ahí, el tooltip deja de ser un lujo y pasa a
+// ser necesario para saber a dónde lleva cada ícono.
+function NavTooltip({ label, children }) {
+  return (
+    <OverlayTrigger placement="right" delay={{ show: 300, hide: 0 }} overlay={<Tooltip>{label}</Tooltip>}>
+      {children}
+    </OverlayTrigger>
+  );
+}
+
+// Exportado: MobileNav.jsx reusa la misma lista para la barra inferior de
+// <640px, en vez de mantener dos fuentes de verdad para las rutas del panel.
+// `short` es la etiqueta que entra en esa barra (espacio de sobra en el rail
+// de escritorio para el label completo, no en una barra de 6 columnas).
+export const NAV_ITEMS = [
+  { to: "/", label: "Resumen en vivo", short: "Resumen", icon: LayoutGrid, end: true },
+  { to: "/historial", label: "Historial de inspecciones", short: "Historial", icon: History },
+  { to: "/rechazadas", label: "Limones rechazados", short: "Rechazados", icon: PackageX },
+  { to: "/modelos-ia", label: "Modelos de IA", short: "Modelos", icon: Cpu },
+  { to: "/configuracion", label: "Configuración", short: "Config.", icon: SlidersHorizontal },
+  { to: "/ayuda", label: "Ayuda", short: "Ayuda", icon: CircleHelp },
 ];
 
 function initialsOf(name = "") {
@@ -20,8 +36,8 @@ function initialsOf(name = "") {
 }
 
 // Escritorio (lg+): rail completo con etiquetas. Tablet (sm-lg): rail de solo
-// iconos para no robar ancho al contenido. Teléfonos (<sm): oculto -- el uso
-// principal de este panel es de escritorio, según el requisito de diseño.
+// iconos para no robar ancho al contenido. Teléfonos (<sm): oculto -- ese
+// tamaño lo cubre MobileNav.jsx (barra inferior), no este rail lateral.
 export function Sidebar() {
   const { connectionOk } = useSystem();
   const { user, logout } = useAuth();
@@ -35,8 +51,8 @@ export function Sidebar() {
   return (
     <aside className="hidden sm:flex w-16 lg:w-64 shrink-0 flex-col border-r border-line bg-panel px-2 lg:px-4 py-6 transition-[width] duration-150">
       <div className="flex items-center gap-2.5 px-1 lg:px-2 mb-8 justify-center lg:justify-start">
-        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-blue-500 text-white">
-          <ScanEye size={18} strokeWidth={2} />
+        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-green-500 text-white">
+          <Leaf size={18} strokeWidth={2} />
         </div>
         <div className="hidden lg:block">
           <p className="text-sm font-semibold text-ink leading-tight">InspectaLine</p>
@@ -46,22 +62,22 @@ export function Sidebar() {
 
       <nav className="flex-1 space-y-1">
         {NAV_ITEMS.map(({ to, label, icon: Icon, end }) => (
-          <NavLink
-            key={to}
-            to={to}
-            end={end}
-            title={label}
-            className={({ isActive }) =>
-              `focus-ring flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm transition-colors duration-150 justify-center lg:justify-start ${
-                isActive
-                  ? "bg-blue-50 text-blue-700 font-medium"
-                  : "text-ink-soft hover:bg-panel-alt hover:text-ink"
-              }`
-            }
-          >
-            <Icon size={17} strokeWidth={2} className="shrink-0" />
-            <span className="hidden lg:inline">{label}</span>
-          </NavLink>
+          <NavTooltip key={to} label={label}>
+            <NavLink
+              to={to}
+              end={end}
+              className={({ isActive }) =>
+                `focus-ring flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm transition-colors duration-150 justify-center lg:justify-start ${
+                  isActive
+                    ? "bg-green-50 text-green-700 font-medium"
+                    : "text-ink-soft hover:bg-panel-alt hover:text-ink"
+                }`
+              }
+            >
+              <Icon size={17} strokeWidth={2} className="shrink-0" />
+              <span className="hidden lg:inline">{label}</span>
+            </NavLink>
+          </NavTooltip>
         ))}
       </nav>
 
@@ -81,14 +97,16 @@ export function Sidebar() {
           <p className="truncate text-xs font-medium text-ink">{user?.name ?? "Usuario"}</p>
           <p className="truncate text-[11px] text-ink-faint">{user?.role ?? "Operador"}</p>
         </div>
-        <button
-          type="button"
-          onClick={handleLogout}
-          title="Cerrar sesión"
-          className="focus-ring shrink-0 rounded-lg p-1.5 text-ink-faint hover:bg-panel-alt hover:text-coral-500"
-        >
-          <LogOut size={15} strokeWidth={2} />
-        </button>
+        <OverlayTrigger placement="top" overlay={<Tooltip>Cerrar sesión</Tooltip>}>
+          <button
+            type="button"
+            onClick={handleLogout}
+            aria-label="Cerrar sesión"
+            className="focus-ring shrink-0 rounded-lg p-1.5 text-ink-faint transition-transform duration-150 active:scale-[0.9] hover:bg-panel-alt hover:text-terracotta-500"
+          >
+            <LogOut size={15} strokeWidth={2} />
+          </button>
+        </OverlayTrigger>
       </div>
     </aside>
   );
