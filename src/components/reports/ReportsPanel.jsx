@@ -1,11 +1,40 @@
 import { useEffect, useState } from "react";
-import { CalendarRange, Download, ClipboardList, PackageX, ScanLine, Percent, TriangleAlert } from "lucide-react";
+import {
+  CalendarRange,
+  Download,
+  ClipboardList,
+  PackageX,
+  ScanLine,
+  Percent,
+  TriangleAlert,
+  BookmarkPlus,
+  Bookmark,
+  Pencil,
+  Check,
+  Trash2,
+} from "lucide-react";
 import { Card, CardHeader } from "../ui/Card.jsx";
 import { Button } from "../ui/Button.jsx";
 import { getReportSummary, downloadReportPdf, USE_MOCK_DATA } from "../../lib/api.js";
 import { mockReport } from "../../data/mockData.js";
 
 const MODEL_LABELS = { A: "Modelo A (YOLOv8)", B: "Modelo B (clasificador)", C: "Heurístico de respaldo" };
+
+// Reportes guardados: rangos de fechas favoritos (ej. "Semana pasada",
+// "Cierre de mes") para no tener que reelegir las mismas fechas cada vez.
+// Solo del lado del cliente (localStorage) -- es una conveniencia de UI
+// sobre el mismo endpoint de reportes, no una entidad que el backend
+// necesite conocer.
+const PRESETS_KEY = "inspectaline_report_presets";
+
+function loadPresets() {
+  try {
+    const raw = JSON.parse(localStorage.getItem(PRESETS_KEY));
+    return Array.isArray(raw) ? raw : [];
+  } catch {
+    return [];
+  }
+}
 
 function isoDate(d) {
   return d.toISOString().slice(0, 10);
@@ -41,7 +70,17 @@ export function ReportsPanel() {
   const [downloading, setDownloading] = useState(false);
   const [error, setError] = useState(null);
 
-  const loadReport = async () => {
+  const [presets, setPresets] = useState(loadPresets);
+  const [presetName, setPresetName] = useState("");
+  const [editingPresetId, setEditingPresetId] = useState(null);
+  const [editingPresetName, setEditingPresetName] = useState("");
+
+  useEffect(() => {
+    localStorage.setItem(PRESETS_KEY, JSON.stringify(presets));
+  }, [presets]);
+
+  const loadReport = async (overrideRange) => {
+    const r = overrideRange ?? range;
     if (USE_MOCK_DATA) {
       setReport(mockReport);
       return;
@@ -49,13 +88,45 @@ export function ReportsPanel() {
     setLoading(true);
     setError(null);
     try {
-      setReport(await getReportSummary(range.start, range.end));
+      setReport(await getReportSummary(r.start, r.end));
     } catch (err) {
       setError(err.message);
     } finally {
       setLoading(false);
     }
   };
+
+  // Crear: guarda el rango de fechas actual con un nombre.
+  const savePreset = () => {
+    const label = presetName.trim();
+    if (!label) return;
+    setPresets((prev) => [...prev, { id: Date.now(), label, start: range.start, end: range.end }]);
+    setPresetName("");
+  };
+
+  // Leer/usar: aplica el rango guardado y genera el reporte con esas fechas.
+  const applyPreset = (p) => {
+    const r = { start: p.start, end: p.end };
+    setRange(r);
+    loadReport(r);
+  };
+
+  const startRenamePreset = (p) => {
+    setEditingPresetId(p.id);
+    setEditingPresetName(p.label);
+  };
+
+  // Actualizar: solo el nombre -- para cambiar el rango se guarda uno nuevo.
+  const confirmRenamePreset = () => {
+    const label = editingPresetName.trim();
+    if (label) {
+      setPresets((prev) => prev.map((p) => (p.id === editingPresetId ? { ...p, label } : p)));
+    }
+    setEditingPresetId(null);
+  };
+
+  // Eliminar.
+  const deletePreset = (id) => setPresets((prev) => prev.filter((p) => p.id !== id));
 
   useEffect(() => {
     loadReport();
@@ -109,7 +180,7 @@ export function ReportsPanel() {
               className="focus-ring rounded-lg border border-line bg-canvas px-3 py-2 text-sm text-ink"
             />
           </label>
-          <Button variant="primary" onClick={loadReport} disabled={loading}>
+          <Button variant="primary" onClick={() => loadReport()} disabled={loading}>
             {loading ? "Generando..." : "Generar reporte"}
           </Button>
           <Button variant="soft" icon={Download} onClick={handleDownload} disabled={downloading || !totals}>
@@ -121,6 +192,89 @@ export function ReportsPanel() {
             <TriangleAlert size={14} strokeWidth={2} className="shrink-0" />
             {error}
           </div>
+        )}
+      </Card>
+
+      <Card>
+        <CardHeader
+          icon={Bookmark}
+          title="Reportes guardados"
+          subtitle="Guarda el rango actual con un nombre para volver a generarlo en un click"
+        />
+        <div className="flex flex-wrap items-end gap-3 mb-4">
+          <label className="text-sm flex-1 min-w-[200px]">
+            <span className="block text-xs text-ink-faint mb-1">Nombre del reporte</span>
+            <input
+              value={presetName}
+              onChange={(e) => setPresetName(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && savePreset()}
+              placeholder="Ej. Cierre de mes"
+              className="focus-ring w-full rounded-lg border border-line bg-canvas px-3 py-2 text-sm text-ink placeholder:text-ink-faint"
+            />
+          </label>
+          <Button variant="primary" icon={BookmarkPlus} onClick={savePreset} disabled={!presetName.trim()}>
+            Guardar rango actual
+          </Button>
+        </div>
+
+        {presets.length === 0 ? (
+          <p className="text-sm text-ink-faint">Todavía no guardaste ningún rango de fechas.</p>
+        ) : (
+          <ul className="space-y-2">
+            {presets.map((p) => {
+              const isRenaming = editingPresetId === p.id;
+              return (
+                <li
+                  key={p.id}
+                  className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-line bg-canvas px-3.5 py-2.5"
+                >
+                  {isRenaming ? (
+                    <input
+                      autoFocus
+                      value={editingPresetName}
+                      onChange={(e) => setEditingPresetName(e.target.value)}
+                      onKeyDown={(e) => e.key === "Enter" && confirmRenamePreset()}
+                      className="focus-ring flex-1 min-w-[160px] rounded-lg border border-line bg-panel px-2.5 py-1.5 text-sm text-ink"
+                    />
+                  ) : (
+                    <div>
+                      <p className="text-sm font-medium text-ink">{p.label}</p>
+                      <p className="text-xs text-ink-faint tnum">{p.start} a {p.end}</p>
+                    </div>
+                  )}
+                  <div className="flex items-center gap-2">
+                    {isRenaming ? (
+                      <Button variant="soft" size="sm" icon={Check} onClick={confirmRenamePreset}>
+                        Listo
+                      </Button>
+                    ) : (
+                      <>
+                        <Button variant="soft" size="sm" icon={Bookmark} onClick={() => applyPreset(p)}>
+                          Usar
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          icon={Pencil}
+                          title="Renombrar"
+                          aria-label={`Renombrar "${p.label}"`}
+                          onClick={() => startRenamePreset(p)}
+                        />
+                        <Button
+                          variant="danger"
+                          size="sm"
+                          icon={Trash2}
+                          title="Eliminar reporte guardado"
+                          aria-label={`Eliminar reporte guardado "${p.label}"`}
+                          onClick={() => deletePreset(p.id)}
+                        />
+                      </>
+                    )}
+                  </div>
+                </li>
+              );
+            })}
+          </ul>
         )}
       </Card>
 

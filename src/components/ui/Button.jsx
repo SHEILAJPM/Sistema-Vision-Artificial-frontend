@@ -25,7 +25,7 @@ export function Button({
   return (
     <button
       disabled={disabled}
-      className={`focus-ring inline-flex items-center justify-center rounded-lg font-medium transition-[background-color,border-color,color,transform] duration-150 hover:-translate-y-px active:translate-y-0 active:scale-[0.97] disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:translate-y-0 ${VARIANTS[variant]} ${SIZES[size]} ${className}`}
+      className={`focus-ring inline-flex items-center justify-center rounded-lg font-medium transition-[background-color,border-color,color,transform,box-shadow] duration-150 hover:-translate-y-0.5 hover:shadow-card active:translate-y-0 active:scale-[0.97] active:shadow-none disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:translate-y-0 disabled:hover:shadow-none ${VARIANTS[variant]} ${SIZES[size]} ${className}`}
       {...props}
     >
       {Icon && <Icon size={size === "sm" ? 14 : size === "lg" ? 18 : 16} strokeWidth={2} />}

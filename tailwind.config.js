@@ -25,11 +25,17 @@ export default {
         // (fondo de página) a propósito: las tarjetas deben despegar del
         // fondo, no fundirse con él. line/line-strong dan la estructura de
         // bordes/divisores.
-        canvas: "#F4EFE1",
-        panel: "#FCFAF4",
-        "panel-alt": "#F0E9D8",
-        line: "#E3D9C0",
-        "line-strong": "#C9B98D",
+        // Profundizadas respecto al beige original (F4EFE1/FCFAF4/...): mismo
+        // hue cálido, menos "lavado" -- pedido explícito de que el fondo se
+        // sienta con más cuerpo sin cruzar a modo oscuro. ink/ink-soft/ink-faint
+        // no se tocan: oscurecer el fondo solo sube su contraste contra ellos,
+        // nunca lo baja, así que el AA ya validado (ver comentario de `ink`)
+        // sigue de pie.
+        canvas: "#EBE1C7",
+        panel: "#F9F3E4",
+        "panel-alt": "#E7DBB9",
+        line: "#D2C093",
+        "line-strong": "#B69A5C",
         ink: {
           DEFAULT: "#2A2721",
           soft: "#4E4A3B",

@@ -123,6 +123,9 @@ export const getUsers = () => request("/api/users");
 // POST /api/users  body: { username, password, name, role } -> usuario creado (solo Admin)
 export const postUser = (user) => request("/api/users", { method: "POST", body: JSON.stringify(user) });
 
+// PUT /api/users/:id  body: { name?, role? } -> usuario actualizado (solo Admin)
+export const putUser = (id, patch) => request(`/api/users/${id}`, { method: "PUT", body: JSON.stringify(patch) });
+
 // DELETE /api/users/:id -- solo Admin; falla si es el propio usuario o el último Admin
 export const deleteUser = (id) => request(`/api/users/${id}`, { method: "DELETE" });
 

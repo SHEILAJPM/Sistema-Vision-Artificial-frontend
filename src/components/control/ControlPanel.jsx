@@ -38,7 +38,7 @@ function ControlTile({ icon: Icon, label, pendingLabel, blockedLabel, pending, b
       aria-busy={pending}
       aria-disabled={disabled}
       onClick={onClick}
-      className={`focus-ring group flex items-center gap-3 rounded-xl border border-line bg-panel px-4 py-3.5 text-left transition-[background-color,border-color,color,transform] duration-150 hover:border-line-strong hover:-translate-y-px active:translate-y-0 active:scale-[0.97] disabled:opacity-60 disabled:hover:translate-y-0 ${
+      className={`focus-ring group flex items-center gap-3 rounded-xl border border-line bg-panel px-4 py-3.5 text-left transition-[background-color,border-color,color,transform,box-shadow] duration-150 hover:border-line-strong hover:-translate-y-0.5 hover:shadow-card active:translate-y-0 active:scale-[0.97] active:shadow-none disabled:opacity-60 disabled:hover:translate-y-0 disabled:hover:shadow-none ${
         pending ? "disabled:cursor-wait" : "disabled:cursor-not-allowed"
       } ${wide ? "col-span-2 md:col-span-3" : "flex-col text-center items-center"}`}
     >

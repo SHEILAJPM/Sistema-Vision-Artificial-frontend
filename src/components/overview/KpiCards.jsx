@@ -63,7 +63,7 @@ export function KpiCards() {
       )}
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-12 gap-4">
         <HeroKpi
-          span="sm:col-span-2 xl:col-span-4"
+          span="sm:col-span-2 xl:col-span-4 animate-fade-up"
           tone="green"
           icon={ScanLine}
           label="Limones inspeccionados hoy"
@@ -73,7 +73,12 @@ export function KpiCards() {
           trend={trend}
         />
 
-        <StatCard icon={ScanLine} label="Banda transportadora" tone={bandaRunning ? "green" : "idle"} span="xl:col-span-3">
+        <StatCard
+          icon={ScanLine}
+          label="Banda transportadora"
+          tone={bandaRunning ? "green" : "idle"}
+          span="xl:col-span-3 animate-fade-up [animation-delay:70ms]"
+        >
           <div className="flex items-center justify-between">
             <div>
               <p className="text-lg font-semibold text-ink tnum">{bandaRunning ? "En marcha" : "Detenida"}</p>
@@ -90,7 +95,12 @@ export function KpiCards() {
           </div>
         </StatCard>
 
-        <StatCard icon={Lightbulb} label="Iluminación (relé)" tone={luzOn ? "gold" : "idle"} span="xl:col-span-2">
+        <StatCard
+          icon={Lightbulb}
+          label="Iluminación (relé)"
+          tone={luzOn ? "gold" : "idle"}
+          span="xl:col-span-2 animate-fade-up [animation-delay:140ms]"
+        >
           <div className="flex flex-col gap-2.5">
             <div>
               <p className="text-lg font-semibold text-ink tnum">{luzOn ? "Encendida" : "Apagada"}</p>
@@ -113,7 +123,7 @@ export function KpiCards() {
         </StatCard>
 
         <HeroKpi
-          span="sm:col-span-2 xl:col-span-3"
+          span="sm:col-span-2 xl:col-span-3 animate-fade-up [animation-delay:210ms]"
           tone="terracotta"
           icon={PackageX}
           label="Limones rechazados hoy"

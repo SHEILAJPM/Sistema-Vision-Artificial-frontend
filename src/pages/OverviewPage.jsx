@@ -51,20 +51,26 @@ export default function OverviewPage() {
       <FlowConnector />
 
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
-        <div className="xl:col-span-2">
+        <div className="xl:col-span-2 animate-fade-up [animation-delay:260ms]">
           <LiveFeed />
         </div>
-        <ControlPanel />
+        <div className="animate-fade-up [animation-delay:320ms]">
+          <ControlPanel />
+        </div>
       </div>
 
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
-        <div className="xl:col-span-2">
+        <div className="xl:col-span-2 animate-fade-up [animation-delay:380ms]">
           <TrendChart />
         </div>
-        <DistributionChart />
+        <div className="animate-fade-up [animation-delay:440ms]">
+          <DistributionChart />
+        </div>
       </div>
 
-      <EventsTable live />
+      <div className="animate-fade-up [animation-delay:500ms]">
+        <EventsTable live />
+      </div>
     </AppShell>
   );
 }
