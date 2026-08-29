@@ -12,7 +12,12 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
+          # jsdom@30 y varias deps transitivas de los tests exigen Node >=22;
+          # 24 matchea el Node local (v24.19.0 / npm 11) que genero el lockfile,
+          # asi npm ci en CI reconcilia el mismo package-lock.json sin choques
+          # de version de npm (20 trae npm 10.8.2 y fallaba con "Missing:
+          # esbuild@... from lock file").
+          node-version: 24
           cache: npm
       - run: npm ci
       - run: npm run lint
