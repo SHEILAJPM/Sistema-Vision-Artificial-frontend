@@ -57,7 +57,7 @@ export default {
           700: "#17291A",
         },
         // Verde medio/fresco -- estados "conectado"/"en vivo" puntuales
-        // (StatDot, pill de Arduino conectado): un escalón más claro que el
+        // (StatDot, pill de ESP32 conectado): un escalón más claro que el
         // verde de marca para no competir con él, misma familia cromática.
         teal: {
           50: "#EAF3EA",

@@ -63,7 +63,7 @@
 }
 
 /* Panel de control manual: acabado "metal cepillado" sutil para que se lea
-   como override físico del Arduino, no como otra tarjeta blanca más. Franjas
+   como override físico del ESP32, no como otra tarjeta blanca más. Franjas
    finas repetidas (el cepillado) + un brillo diagonal que barre lento y
    constante (linear, igual que scan/shimmer: nunca frena) -- movimiento
    ambiente de bajo amplitud, no un efecto que se dispara una vez. Vive como

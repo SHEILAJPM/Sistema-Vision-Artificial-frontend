@@ -3,7 +3,7 @@
   "private": true,
   "version": "1.0.0",
   "type": "module",
-  "description": "Dashboard de monitoreo y control para sistema de inspeccion visual automatizado (banda transportadora + Arduino + YOLOv8)",
+  "description": "Dashboard de monitoreo y control para sistema de inspeccion visual automatizado (banda transportadora + ESP32 + YOLOv8)",
   "scripts": {
     "dev": "vite",
     "build": "vite build",

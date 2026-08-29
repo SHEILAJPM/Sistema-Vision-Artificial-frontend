@@ -20,11 +20,11 @@ const TILE_TONE = {
 };
 
 // Tiles grandes con ícono en círculo en vez de botones de formulario chicos:
-// se siente más a "panel de control físico" (Arduino, banda, servo) que a un
+// se siente más a "panel de control físico" (ESP32, banda, servo) que a un
 // formulario web genérico, y deja el estado pendiente bien visible.
 //
 // `blocked` es distinto de `pending`: antes el tile solo se deshabilitaba
-// mientras el comando estaba en vuelo, así que con el Arduino desconectado
+// mientras el comando estaba en vuelo, así que con el ESP32 desconectado
 // se podia tocar "Probar servo" una y otra vez y cada intento hacia un
 // round-trip completo solo para mostrar el mismo error (hallazgo P2 de
 // /impeccable critique). cursor-not-allowed en vez de cursor-wait cuando
@@ -72,14 +72,14 @@ export function ControlPanel() {
   // mientras "Iniciar banda" seguia en vuelo pisaba silenciosamente el
   // pending de banda.
   const [pending, setPending] = useState(() => new Set());
-  // El banner de conexion (ConnectionBanner) solo cubre backend/Arduino
+  // El banner de conexion (ConnectionBanner) solo cubre backend/ESP32
   // caidos. Si un comando falla por otro motivo, antes no se veia nada mas
   // que el spinner desapareciendo (hallazgo P1 de /impeccable critique).
   const [error, setError] = useState(null);
 
   const bandaRunning = status?.banda === "running";
   const luzOn = status?.luz === "on";
-  const arduinoConnected = status?.arduino === "connected";
+  const esp32Connected = status?.esp32 === "connected";
 
   const run = async (command) => {
     setPending((prev) => new Set(prev).add(command));
@@ -97,13 +97,13 @@ export function ControlPanel() {
       <div className="relative">
         <CardHeader
           title="Control manual"
-          subtitle="Override directo del Arduino, para pruebas y mantenimiento"
+          subtitle="Override directo del ESP32, para pruebas y mantenimiento"
           action={
             <div className="flex items-center gap-2 rounded-full border border-black/10 bg-white/50 px-3 py-1.5 backdrop-blur-sm">
-              <Plug size={13} className={arduinoConnected ? "text-teal-600" : "text-terracotta-500"} strokeWidth={2} />
-              <StatDot tone={arduinoConnected ? "ok" : "rejected"} pulse={arduinoConnected} />
+              <Plug size={13} className={esp32Connected ? "text-teal-600" : "text-terracotta-500"} strokeWidth={2} />
+              <StatDot tone={esp32Connected ? "ok" : "rejected"} pulse={esp32Connected} />
               <span className="text-xs text-ink-soft">
-                {arduinoConnected ? `Conectado · ${status?.serialPort ?? "--"}` : "Sin conexión serial"}
+                {esp32Connected ? `Conectado · ${status?.esp32Host ?? "--"}:${status?.esp32Port ?? "--"}` : "Sin conexión WiFi"}
               </span>
             </div>
           }
@@ -128,7 +128,7 @@ export function ControlPanel() {
           pendingLabel={bandaRunning ? "Deteniendo..." : "Iniciando..."}
           blockedLabel="Sin conexión"
           pending={pending.has("START") || pending.has("STOP")}
-          blocked={!arduinoConnected}
+          blocked={!esp32Connected}
           tone={bandaRunning ? "danger" : "primary"}
           onClick={() => run(bandaRunning ? "STOP" : "START")}
         />
@@ -139,7 +139,7 @@ export function ControlPanel() {
           pendingLabel="Cambiando..."
           blockedLabel="Sin conexión"
           pending={pending.has("LIGHT_ON") || pending.has("LIGHT_OFF")}
-          blocked={!arduinoConnected}
+          blocked={!esp32Connected}
           tone="neutral"
           onClick={() => run(luzOn ? "LIGHT_OFF" : "LIGHT_ON")}
         />
@@ -150,19 +150,19 @@ export function ControlPanel() {
           pendingLabel="Probando..."
           blockedLabel="Sin conexión"
           pending={pending.has("TEST_SERVO")}
-          blocked={!arduinoConnected}
+          blocked={!esp32Connected}
           tone="primary"
           onClick={() => run("TEST_SERVO")}
         />
 
         <ControlTile
           icon={RefreshCw}
-          label="Reiniciar conexión con Arduino"
+          label="Reiniciar conexión con ESP32"
           pendingLabel="Reconectando..."
-          pending={pending.has("RECONNECT_ARDUINO")}
+          pending={pending.has("RECONNECT_ESP32")}
           tone="neutral"
           wide
-          onClick={() => run("RECONNECT_ARDUINO")}
+          onClick={() => run("RECONNECT_ESP32")}
         />
       </div>
     </div>

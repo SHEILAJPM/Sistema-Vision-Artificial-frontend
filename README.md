@@ -109,11 +109,11 @@ estado/los eventos.
 | `POST` | `/api/auth/login` | body `{ username, password }` → `{ token, user: { name, role } }` |
 | `GET` | `/api/auth/me` | Valida el token guardado → `{ name, role }` (401 si vencio) |
 | `POST` | `/api/auth/logout` | Invalida el token en el backend (best effort) |
-| `GET` | `/api/status` | `{ banda, luz, arduino, backend, serialPort, baudrate }` |
-| `POST` | `/api/control` | body `{ command }`, `command` ∈ `START`, `STOP`, `LIGHT_ON`, `LIGHT_OFF`, `TEST_SERVO`, `RECONNECT_ARDUINO` |
+| `GET` | `/api/status` | `{ banda, luz, esp32, backend, esp32Host, esp32Port }` |
+| `POST` | `/api/control` | body `{ command }`, `command` ∈ `START`, `STOP`, `LIGHT_ON`, `LIGHT_OFF`, `TEST_SERVO`, `RECONNECT_ESP32` |
 | `GET` | `/api/stats` | `{ today: { inspected, rejected, rejectRate }, trend: [...], distribution: { ok, defectuosos } }` |
 | `GET` | `/api/events?limit=50` | `[{ id, timestamp, result: "ok"\|"rejected", action, confidence, thumbnail }]` |
-| `GET` | `/api/settings` | `{ pwmSpeed, confidenceThreshold, camera, cameras, serialPort, baudrate, ports, baudrates }` |
+| `GET` | `/api/settings` | `{ pwmSpeed, confidenceThreshold, camera, cameras, esp32Host, esp32Port }` |
 | `POST` | `/api/settings` | body: subconjunto de lo anterior a actualizar |
 | `GET` | `/api/model/status` | `{ seleccion_activa, modelo_decision, modelo_a_cargado, modelo_b_cargado, modo_respaldo_heuristico, errores_carga }` |
 | `POST` | `/api/model/select` | body `{ modelo: "A" \| "B" \| "ambos" }` — cual modelo evalua cada limon |
@@ -139,7 +139,7 @@ Todos los endpoints salvo `/api/auth/login` esperan el header
 Mensajes JSON con forma `{ "type": "...", "data": {...} }`:
 
 ```jsonc
-{ "type": "status", "data": { "banda": "running", "luz": "on", "arduino": "connected" } }
+{ "type": "status", "data": { "banda": "running", "luz": "on", "esp32": "connected" } }
 { "type": "stats", "data": { "today": { "inspected": 875, "rejected": 63, "rejectRate": 7.2 } } }
 { "type": "event", "data": { "id": "EVT-1042", "timestamp": "2026-08-23T19:04:00Z", "result": "ok", "action": "Sin accion", "confidence": 0.97, "thumbnail": null } }
 { "type": "detections", "data": { "frame_w": 1280, "frame_h": 720, "boxes": [

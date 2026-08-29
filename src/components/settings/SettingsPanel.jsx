@@ -123,32 +123,25 @@ export function SettingsPanel() {
       </Card>
 
       <Card>
-        <CardHeader icon={Cable} title="Conexión serial" subtitle="Puerto y velocidad de comunicación con el Arduino" />
-        <Field label="Puerto serial">
-          <select
-            className={selectClass}
-            value={form.serialPort}
-            onChange={(e) => update({ serialPort: e.target.value })}
-          >
-            {form.ports?.map((port) => (
-              <option key={port} value={port}>
-                {port}
-              </option>
-            ))}
-          </select>
+        <CardHeader icon={Cable} title="Conexión ESP32" subtitle="IP y puerto TCP del ESP32 en la red WiFi" />
+        <Field label="Host / IP" hint="Dirección asignada al ESP32 en tu red WiFi">
+          <input
+            type="text"
+            value={form.esp32Host ?? ""}
+            onChange={(e) => update({ esp32Host: e.target.value })}
+            placeholder="192.168.1.50"
+            className="focus-ring w-full max-w-xs rounded-lg border border-line bg-canvas px-3 py-2 text-sm text-ink placeholder:text-ink-faint"
+          />
         </Field>
-        <Field label="Baudrate">
-          <select
-            className={selectClass}
-            value={form.baudrate}
-            onChange={(e) => update({ baudrate: Number(e.target.value) })}
-          >
-            {form.baudrates?.map((rate) => (
-              <option key={rate} value={rate}>
-                {rate}
-              </option>
-            ))}
-          </select>
+        <Field label="Puerto TCP">
+          <input
+            type="number"
+            min={1}
+            max={65535}
+            value={form.esp32Port ?? ""}
+            onChange={(e) => update({ esp32Port: Number(e.target.value) })}
+            className="focus-ring w-full max-w-xs rounded-lg border border-line bg-canvas px-3 py-2 text-sm text-ink"
+          />
         </Field>
       </Card>
 

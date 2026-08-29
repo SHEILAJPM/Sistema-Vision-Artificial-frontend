@@ -1,6 +1,20 @@
 import { NavLink, useNavigate } from "react-router-dom";
 import { OverlayTrigger, Tooltip } from "react-bootstrap";
-import { LayoutGrid, History, PackageX, FileText, Cpu, Users, SlidersHorizontal, CircleHelp, Leaf, LogOut } from "lucide-react";
+import {
+  LayoutGrid,
+  History,
+  PackageX,
+  FileText,
+  Cpu,
+  ScanSearch,
+  Images,
+  GraduationCap,
+  Users,
+  SlidersHorizontal,
+  CircleHelp,
+  Leaf,
+  LogOut,
+} from "lucide-react";
 import { useSystem } from "../../context/SystemProvider.jsx";
 import { useAuth } from "../../context/AuthProvider.jsx";
 import { StatDot } from "../ui/StatDot.jsx";
@@ -29,6 +43,9 @@ export const NAV_ITEMS = [
   { to: "/rechazadas", label: "Limones rechazados", short: "Rechazados", icon: PackageX },
   { to: "/reportes", label: "Reportes", short: "Reportes", icon: FileText },
   { to: "/modelos-ia", label: "Modelos de IA", short: "Modelos", icon: Cpu },
+  { to: "/inspeccion-manual", label: "Inspección Manual", short: "Inspección", icon: ScanSearch },
+  { to: "/dataset", label: "Dataset", short: "Dataset", icon: Images, adminOnly: true },
+  { to: "/entrenamiento", label: "Entrenamiento", short: "Entrenar", icon: GraduationCap, adminOnly: true },
   { to: "/usuarios", label: "Usuarios", short: "Usuarios", icon: Users, adminOnly: true },
   { to: "/configuracion", label: "Configuración", short: "Config.", icon: SlidersHorizontal },
   { to: "/ayuda", label: "Ayuda", short: "Ayuda", icon: CircleHelp },

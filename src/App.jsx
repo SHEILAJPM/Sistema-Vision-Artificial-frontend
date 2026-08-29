@@ -15,6 +15,10 @@ const HistoryPage = lazy(() => import("./pages/HistoryPage.jsx"));
 const RejectedPage = lazy(() => import("./pages/RejectedPage.jsx"));
 const ReportsPage = lazy(() => import("./pages/ReportsPage.jsx"));
 const ModelsPage = lazy(() => import("./pages/ModelsPage.jsx"));
+const ManualInspectionPage = lazy(() => import("./pages/ManualInspectionPage.jsx"));
+const DatasetPage = lazy(() => import("./pages/DatasetPage.jsx"));
+const AnnotatePage = lazy(() => import("./pages/AnnotatePage.jsx"));
+const TrainingPage = lazy(() => import("./pages/TrainingPage.jsx"));
 const UsersPage = lazy(() => import("./pages/UsersPage.jsx"));
 const SettingsPage = lazy(() => import("./pages/SettingsPage.jsx"));
 const HelpPage = lazy(() => import("./pages/HelpPage.jsx"));
@@ -48,7 +52,11 @@ export default function App() {
           <Route path="/rechazadas" element={<RejectedPage />} />
           <Route path="/reportes" element={<ReportsPage />} />
           <Route path="/modelos-ia" element={<ModelsPage />} />
+          <Route path="/inspeccion-manual" element={<ManualInspectionPage />} />
           <Route element={<RequireAdmin />}>
+            <Route path="/dataset" element={<DatasetPage />} />
+            <Route path="/dataset/:imageId/anotar" element={<AnnotatePage />} />
+            <Route path="/entrenamiento" element={<TrainingPage />} />
             <Route path="/usuarios" element={<UsersPage />} />
           </Route>
           <Route path="/configuracion" element={<SettingsPage />} />

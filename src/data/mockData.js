@@ -1,13 +1,13 @@
 // Datos de ejemplo usados solo cuando VITE_USE_MOCK_DATA=true, para poder
-// revisar el diseño del dashboard sin backend/Arduino conectados.
+// revisar el diseño del dashboard sin backend/ESP32 conectados.
 
 export const mockStatus = {
   banda: "running", // "running" | "stopped"
   luz: "on", // "on" | "off"
-  arduino: "connected", // "connected" | "disconnected"
+  esp32: "connected", // "connected" | "disconnected"
   backend: "connected",
-  serialPort: "COM4",
-  baudrate: 115200,
+  esp32Host: "192.168.1.50",
+  esp32Port: 3232,
 };
 
 const hours = ["08:00", "09:00", "10:00", "11:00", "12:00", "13:00", "14:00", "15:00"];
@@ -62,10 +62,8 @@ export const mockSettings = {
     { id: "cam0", label: "Cámara 1 - Zona de inspección" },
     { id: "cam1", label: "Cámara 2 - Salida de banda" },
   ],
-  serialPort: "COM4",
-  baudrate: 115200,
-  ports: ["COM3", "COM4", "COM5"],
-  baudrates: [9600, 19200, 38400, 57600, 115200],
+  esp32Host: "192.168.1.50",
+  esp32Port: 3232,
 };
 
 export const mockModelStatus = {

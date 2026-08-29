@@ -11,13 +11,13 @@ import { useSystem } from "../../context/SystemProvider.jsx";
 export function ConnectionBanner() {
   const { connectionOk, status, lastError } = useSystem();
 
-  const arduinoDown = status?.arduino === "disconnected";
+  const esp32Down = status?.esp32 === "disconnected";
   const backendDown = !connectionOk;
-  const visible = arduinoDown || backendDown;
+  const visible = esp32Down || backendDown;
 
   const message = backendDown
     ? "Sin conexión con el backend. Verifica que el servidor esté activo y reintenta."
-    : "Arduino desconectado. La banda, la luz y el servo no responderan a comandos.";
+    : "ESP32 desconectado. La banda, la luz y el servo no responderan a comandos.";
 
   return (
     <Fade in={visible} unmountOnExit>

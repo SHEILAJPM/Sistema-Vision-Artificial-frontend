@@ -43,6 +43,27 @@ async function request(path, options = {}) {
   return contentType.includes("application/json") ? res.json() : res.text();
 }
 
+// Igual que request(), pero para multipart/form-data (subida de imágenes):
+// no fija Content-Type (el navegador arma el boundary solo) y no serializa
+// el body a JSON.
+async function requestForm(path, formData) {
+  const token = getStoredToken();
+  const res = await fetch(`${API_BASE_URL}${path}`, {
+    method: "POST",
+    headers: token ? { Authorization: `Bearer ${token}` } : {},
+    body: formData,
+  });
+  if (res.status === 401) {
+    unauthorizedHandler?.();
+    throw new Error("Sesión inválida o expirada");
+  }
+  if (!res.ok) {
+    const body = await res.text().catch(() => "");
+    throw new Error(`POST ${path} -> HTTP ${res.status} ${body}`);
+  }
+  return res.json();
+}
+
 // POST /api/auth/login  body: { username, password } -> { token, user: { name, role } }
 export const postLogin = (username, password) =>
   request("/api/auth/login", { method: "POST", body: JSON.stringify({ username, password }) });
@@ -53,10 +74,10 @@ export const getMe = () => request("/api/auth/me");
 // POST /api/auth/logout -- best effort, invalida el token en el backend
 export const postLogout = () => request("/api/auth/logout", { method: "POST" });
 
-// GET /api/status -> { banda, luz, arduino, backend }
+// GET /api/status -> { banda, luz, esp32, backend, esp32Host, esp32Port }
 export const getStatus = () => request("/api/status");
 
-// POST /api/control  body: { command: "START" | "STOP" | "LIGHT_ON" | "LIGHT_OFF" | "TEST_SERVO" | "RECONNECT_ARDUINO" }
+// POST /api/control  body: { command: "START" | "STOP" | "LIGHT_ON" | "LIGHT_OFF" | "TEST_SERVO" | "RECONNECT_ESP32" }
 export const postControl = (command, payload = {}) =>
   request("/api/control", { method: "POST", body: JSON.stringify({ command, ...payload }) });
 
@@ -68,7 +89,7 @@ export const getStats = () => request("/api/stats");
 // tabla de eventos muestra qué modelo decidió cada pieza; si no, oculta la columna.
 export const getEvents = (limit = 50) => request(`/api/events?limit=${limit}`);
 
-// GET /api/settings -> { pwmSpeed, confidenceThreshold, camera, cameras, serialPort, baudrate, ports }
+// GET /api/settings -> { pwmSpeed, confidenceThreshold, camera, cameras, esp32Host, esp32Port }
 export const getSettings = () => request("/api/settings");
 
 // POST /api/settings  body: partial settings object
@@ -128,6 +149,78 @@ export const putUser = (id, patch) => request(`/api/users/${id}`, { method: "PUT
 
 // DELETE /api/users/:id -- solo Admin; falla si es el propio usuario o el último Admin
 export const deleteUser = (id) => request(`/api/users/${id}`, { method: "DELETE" });
+
+// POST /api/inspect/image (multipart) -> { image_w, image_h, latencia_total_ms, conteo, cajas, modelos }
+// Inspección manual de una imagen suelta: no toca inspection_events ni las
+// stats de la línea, ver README backend sección "Inspección Manual".
+export async function postInspectImage(file, { conf, iou } = {}) {
+  const form = new FormData();
+  form.append("file", file);
+  if (conf != null) form.append("conf", conf);
+  if (iou != null) form.append("iou", iou);
+  return requestForm("/api/inspect/image", form);
+}
+
+// --- Dataset (banco de imágenes para reentrenar el Modelo A) ---
+
+// GET /api/dataset/classes -> { clases: [...] }
+export const getDatasetClasses = () => request("/api/dataset/classes");
+
+// GET /api/dataset/stats -> { total_imagenes, anotadas, por_clase }
+export const getDatasetStats = () => request("/api/dataset/stats");
+
+// GET /api/dataset/images?class_label=&limit=&offset= -> { total, items: [...] }
+export const getDatasetImages = (params = {}) => {
+  const qs = new URLSearchParams();
+  if (params.classLabel) qs.set("class_label", params.classLabel);
+  qs.set("limit", params.limit ?? 60);
+  qs.set("offset", params.offset ?? 0);
+  return request(`/api/dataset/images?${qs.toString()}`);
+};
+
+// GET /api/dataset/images/:id -> { id, url, source, class_label, width, height, created_at }
+export const getDatasetImage = (id) => request(`/api/dataset/images/${id}`);
+
+// POST /api/dataset/images (multipart, uno o varios archivos) -> { creadas, errores }
+export async function postDatasetImages(files, classLabel) {
+  const form = new FormData();
+  for (const f of files) form.append("files", f);
+  if (classLabel) form.append("class_label", classLabel);
+  return requestForm("/api/dataset/images", form);
+}
+
+// DELETE /api/dataset/images/:id
+export const deleteDatasetImage = (id) => request(`/api/dataset/images/${id}`, { method: "DELETE" });
+
+// GET /api/dataset/images/:id/annotations -> { boxes: [{id, class_label, x1, y1, x2, y2}] }
+export const getAnnotations = (imageId) => request(`/api/dataset/images/${imageId}/annotations`);
+
+// PUT /api/dataset/images/:id/annotations  body: { boxes: [{class_label, x1, y1, x2, y2}] }
+export const putAnnotations = (imageId, boxes) =>
+  request(`/api/dataset/images/${imageId}/annotations`, { method: "PUT", body: JSON.stringify({ boxes }) });
+
+// POST /api/dataset/export-yolo -> { export_dir, imagenes_train, imagenes_val, clases }
+export const postExportYolo = () => request("/api/dataset/export-yolo", { method: "POST" });
+
+export const datasetImageUrl = (path) => resolveMediaUrl(path);
+
+// --- Entrenamiento (Modelo A/B en background) ---
+
+// POST /api/train/start body: { target: "A"|"B", epochs, batch_size, lr?, imgsz? } -> { run_id }
+export const postTrainStart = (payload) =>
+  request("/api/train/start", { method: "POST", body: JSON.stringify(payload) });
+
+// GET /api/train/runs?limit=20 -> [ {id, target, status, epoch_actual, epoch_total, ...} ]
+export const getTrainRuns = (limit = 20) => request(`/api/train/runs?limit=${limit}`);
+
+// GET /api/train/runs/:id -> detalle de un run
+export const getTrainRun = (id) => request(`/api/train/runs/${id}`);
+
+// POST /api/train/runs/:id/cancel -- best-effort
+export const postTrainCancel = (id) => request(`/api/train/runs/${id}/cancel`, { method: "POST" });
+
+// POST /api/train/runs/:id/promote -- copia el checkpoint a producción y recarga el modelo en caliente
+export const postTrainPromote = (id) => request(`/api/train/runs/${id}/promote`, { method: "POST" });
 
 export const videoFeedUrl = () => `${API_BASE_URL}${VIDEO_FEED_PATH}`;
 

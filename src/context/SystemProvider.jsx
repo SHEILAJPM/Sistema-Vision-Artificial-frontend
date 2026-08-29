@@ -52,6 +52,10 @@ export function SystemProvider({ children }) {
   // "--" en cada celda desde el primer render, igual que si el backend ya
   // hubiera contestado con historial vacio.
   const [modelLoaded, setModelLoaded] = useState(USE_MOCK_DATA);
+  // Progreso en vivo del entrenamiento activo (mensajes "training_progress"
+  // del WS, ver app/training_service.py). Solo lo consume TrainingPage, pero
+  // vive acá para no abrir una segunda conexión WS solo para esa pantalla.
+  const [trainingProgress, setTrainingProgress] = useState(null);
 
   // --- WebSocket: canal principal para estado/eventos/detecciones en vivo ---
   const handleMessage = useCallback((msg) => {
@@ -73,6 +77,10 @@ export function SystemProvider({ children }) {
       case "detections":
         // { boxes: [{x,y,w,h,label,confidence}], frame_w, frame_h }
         setDetections({ boxes: [], frame_w: 0, frame_h: 0, ...msg.data });
+        break;
+      case "training_progress":
+        // { run_id, target, epoch, epoch_total, loss, status }
+        setTrainingProgress(msg.data);
         break;
       default:
         break;
@@ -215,6 +223,7 @@ export function SystemProvider({ children }) {
     modelStatus,
     modelComparison,
     modelLoaded,
+    trainingProgress,
     selectModel,
     sendCommand,
     saveSettings,
@@ -230,7 +239,7 @@ function applyOptimisticStatus(prev, command) {
   if (command === "STOP") next.banda = "stopped";
   if (command === "LIGHT_ON") next.luz = "on";
   if (command === "LIGHT_OFF") next.luz = "off";
-  if (command === "RECONNECT_ARDUINO") next.arduino = "connected";
+  if (command === "RECONNECT_ESP32") next.esp32 = "connected";
   return next;
 }
 

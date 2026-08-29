@@ -56,7 +56,7 @@ describe("SystemProvider (modo real)", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     api.getStoredToken.mockReturnValue("token");
-    api.getStatus.mockResolvedValue({ banda: "stopped", luz: "off", arduino: "connected" });
+    api.getStatus.mockResolvedValue({ banda: "stopped", luz: "off", esp32: "connected" });
     api.getStats.mockResolvedValue({ today: { inspected: 0, rejected: 0, rejectRate: 0 }, trend: [], distribution: {} });
     api.getEvents.mockResolvedValue([]);
     api.getSettings.mockResolvedValue({});

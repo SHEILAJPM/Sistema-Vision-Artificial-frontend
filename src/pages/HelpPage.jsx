@@ -7,12 +7,12 @@ const FAQ = [
   {
     icon: ScanLine,
     q: "La banda no arranca al presionar 'Iniciar'",
-    a: "Revisa el indicador de conexión serial en el panel de control. Si aparece 'Sin conexión serial', usa 'Reiniciar conexión con Arduino' antes de reintentar.",
+    a: "Revisa el indicador de conexión ESP32 en el panel de control. Si aparece 'Sin conexión WiFi', usa 'Reiniciar conexión con ESP32' antes de reintentar.",
   },
   {
     icon: Lightbulb,
     q: "La luz no enciende automáticamente",
-    a: "El relé se activa al iniciar el sistema por firmware del Arduino. Si no enciende, usa el override manual en el panel de control y revisa el cableado del relé.",
+    a: "El relé se activa al iniciar el sistema por firmware del ESP32. Si no enciende, usa el override manual en el panel de control y revisa el cableado del relé.",
   },
   {
     icon: Wrench,
@@ -21,8 +21,8 @@ const FAQ = [
   },
   {
     icon: Cable,
-    q: "Cómo cambio el puerto serial o el baudrate",
-    a: "Ve a Configuración > Conexión serial. Los cambios se envían al backend y se aplican en la siguiente reconexión con el Arduino.",
+    q: "Cómo cambio la IP o el puerto del ESP32",
+    a: "Ve a Configuración > Conexión ESP32. Los cambios se envían al backend y se aplican en la siguiente reconexión WiFi con el ESP32.",
   },
   {
     icon: Cpu,
