@@ -1,3 +1,4 @@
+import PropTypes from "prop-types";
 import { motion } from "motion/react";
 import { Sidebar } from "./Sidebar.jsx";
 import { MobileNav } from "./MobileNav.jsx";
@@ -53,3 +54,11 @@ export function AppShell({ title, subtitle, badge, headerRight, children }) {
     </div>
   );
 }
+
+AppShell.propTypes = {
+  title: PropTypes.node.isRequired,
+  subtitle: PropTypes.node,
+  badge: PropTypes.node,
+  headerRight: PropTypes.node,
+  children: PropTypes.node,
+};

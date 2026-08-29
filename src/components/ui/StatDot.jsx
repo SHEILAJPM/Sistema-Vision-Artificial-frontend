@@ -1,3 +1,5 @@
+import PropTypes from "prop-types";
+
 const COLORS = {
   ok: "bg-teal-500",
   rejected: "bg-terracotta-500",
@@ -18,3 +20,9 @@ export function StatDot({ tone = "idle", pulse = false, label }) {
     </span>
   );
 }
+
+StatDot.propTypes = {
+  tone: PropTypes.oneOf(Object.keys(COLORS)),
+  pulse: PropTypes.bool,
+  label: PropTypes.node,
+};

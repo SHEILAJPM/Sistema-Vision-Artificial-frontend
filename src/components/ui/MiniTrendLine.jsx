@@ -1,4 +1,5 @@
 import { useId, useMemo } from "react";
+import PropTypes from "prop-types";
 
 // Reemplaza el sparkline de barras de las tarjetas hero por una línea que
 // sugiere flujo de datos en tiempo real: se dibuja al montar (stroke-dashoffset
@@ -74,3 +75,9 @@ export function MiniTrendLine({ data, color, height = 40 }) {
     </svg>
   );
 }
+
+MiniTrendLine.propTypes = {
+  data: PropTypes.arrayOf(PropTypes.number).isRequired,
+  color: PropTypes.string.isRequired,
+  height: PropTypes.number,
+};

@@ -1,3 +1,5 @@
+import PropTypes from "prop-types";
+
 export function Toggle({ checked, onChange, disabled, label }) {
   return (
     <label className={`inline-flex items-center gap-2.5 ${disabled ? "opacity-40" : "cursor-pointer"}`}>
@@ -21,3 +23,10 @@ export function Toggle({ checked, onChange, disabled, label }) {
     </label>
   );
 }
+
+Toggle.propTypes = {
+  checked: PropTypes.bool,
+  onChange: PropTypes.func,
+  disabled: PropTypes.bool,
+  label: PropTypes.node,
+};

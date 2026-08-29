@@ -1,3 +1,5 @@
+import PropTypes from "prop-types";
+
 export function Card({ children, className = "", padded = true }) {
   return (
     <div className={`panel-card ${padded ? "p-5" : ""} ${className}`}>
@@ -5,6 +7,12 @@ export function Card({ children, className = "", padded = true }) {
     </div>
   );
 }
+
+Card.propTypes = {
+  children: PropTypes.node,
+  className: PropTypes.string,
+  padded: PropTypes.bool,
+};
 
 export function CardHeader({ title, subtitle, action, icon: Icon }) {
   return (
@@ -24,3 +32,10 @@ export function CardHeader({ title, subtitle, action, icon: Icon }) {
     </div>
   );
 }
+
+CardHeader.propTypes = {
+  title: PropTypes.node,
+  subtitle: PropTypes.node,
+  action: PropTypes.node,
+  icon: PropTypes.elementType,
+};

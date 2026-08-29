@@ -1,3 +1,5 @@
+import PropTypes from "prop-types";
+
 const VARIANTS = {
   primary: "bg-green-500 text-white hover:bg-green-600 border border-green-500",
   danger: "bg-terracotta-500 text-white hover:bg-terracotta-600 border border-terracotta-500",
@@ -31,3 +33,12 @@ export function Button({
     </button>
   );
 }
+
+Button.propTypes = {
+  children: PropTypes.node,
+  variant: PropTypes.oneOf(Object.keys(VARIANTS)),
+  size: PropTypes.oneOf(Object.keys(SIZES)),
+  icon: PropTypes.elementType,
+  disabled: PropTypes.bool,
+  className: PropTypes.string,
+};

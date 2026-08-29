@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import PropTypes from "prop-types";
 import { animate } from "motion";
 
 // Anima un valor numerico "contando" hacia el nuevo valor en vez de saltar,
@@ -22,3 +23,9 @@ export function AnimatedNumber({ value, format = (n) => Math.round(n).toLocaleSt
 
   return <span className="tnum">{format(display)}</span>;
 }
+
+AnimatedNumber.propTypes = {
+  value: PropTypes.number,
+  format: PropTypes.func,
+  duration: PropTypes.number,
+};

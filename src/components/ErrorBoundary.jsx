@@ -1,4 +1,5 @@
 import { Component } from "react";
+import PropTypes from "prop-types";
 import { TriangleAlert } from "lucide-react";
 import { Button } from "./ui/Button.jsx";
 
@@ -47,3 +48,7 @@ export class ErrorBoundary extends Component {
     );
   }
 }
+
+ErrorBoundary.propTypes = {
+  children: PropTypes.node,
+};

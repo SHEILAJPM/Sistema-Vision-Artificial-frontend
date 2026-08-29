@@ -1,3 +1,5 @@
+import PropTypes from "prop-types";
+
 // Marcas de esquina tipo visor/mira de cámara -- firma visual reusable para
 // cualquier superficie que deba leerse como "instrumento de inspección" en
 // vez de una imagen suelta. `tone` controla el color del trazo: "blue" para
@@ -22,3 +24,7 @@ export function ViewfinderCorners({ tone = "blue" }) {
     </>
   );
 }
+
+ViewfinderCorners.propTypes = {
+  tone: PropTypes.oneOf(Object.keys(TONE)),
+};

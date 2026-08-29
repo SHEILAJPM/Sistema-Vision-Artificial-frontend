@@ -1,3 +1,4 @@
+import PropTypes from "prop-types";
 import { Fade } from "react-bootstrap";
 import { Download } from "lucide-react";
 import { Button } from "../ui/Button.jsx";
@@ -54,3 +55,12 @@ export function EventsFilterBar({ dateFrom, dateTo, onDateFromChange, onDateToCh
     </div>
   );
 }
+
+EventsFilterBar.propTypes = {
+  dateFrom: PropTypes.string,
+  dateTo: PropTypes.string,
+  onDateFromChange: PropTypes.func.isRequired,
+  onDateToChange: PropTypes.func.isRequired,
+  onExport: PropTypes.func,
+  exportDisabled: PropTypes.bool,
+};

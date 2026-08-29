@@ -1,3 +1,4 @@
+import PropTypes from "prop-types";
 import { Card } from "./Card.jsx";
 
 // Mismo mapeo de tono que StatDot (teal = "bueno"/activo, azul = info/neutro
@@ -35,3 +36,11 @@ export function StatCard({ icon: Icon, label, children, tone = "idle", span = ""
     </Card>
   );
 }
+
+StatCard.propTypes = {
+  icon: PropTypes.elementType.isRequired,
+  label: PropTypes.node.isRequired,
+  children: PropTypes.node,
+  tone: PropTypes.oneOf(Object.keys(STAT_TONE)),
+  span: PropTypes.string,
+};

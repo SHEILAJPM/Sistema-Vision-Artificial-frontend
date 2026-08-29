@@ -1,3 +1,5 @@
+import PropTypes from "prop-types";
+
 // "ok" y "rejected" son el par de identidad validado (azul/coral) para datos
 // que pueden aparecer lado a lado (tablas, leyendas): distinguible incluso
 // con daltonismo. "info" (teal) queda solo para estados unicos que nunca se
@@ -19,3 +21,9 @@ export function Badge({ tone = "neutral", children, className = "" }) {
     </span>
   );
 }
+
+Badge.propTypes = {
+  tone: PropTypes.oneOf(Object.keys(TONES)),
+  children: PropTypes.node,
+  className: PropTypes.string,
+};

@@ -1,3 +1,4 @@
+import PropTypes from "prop-types";
 import { AnimatePresence, motion } from "motion/react";
 import { ImageOff, Radio } from "lucide-react";
 import { Placeholder } from "react-bootstrap";
@@ -181,3 +182,14 @@ export function EventsTable({
     </Card>
   );
 }
+
+EventsTable.propTypes = {
+  limit: PropTypes.number,
+  filterResult: PropTypes.oneOf(["ok", "rejected"]),
+  events: PropTypes.arrayOf(PropTypes.object),
+  title: PropTypes.string,
+  subtitle: PropTypes.string,
+  showDate: PropTypes.bool,
+  emptyMessage: PropTypes.string,
+  live: PropTypes.bool,
+};

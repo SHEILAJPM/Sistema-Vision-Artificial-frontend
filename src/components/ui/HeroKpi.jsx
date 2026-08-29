@@ -1,3 +1,4 @@
+import PropTypes from "prop-types";
 import { MiniTrendLine } from "./MiniTrendLine.jsx";
 import { useCountUp } from "../../lib/useCountUp.js";
 
@@ -50,3 +51,15 @@ export function HeroKpi({ span = "", tone, icon: Icon, label, value, caption, pi
     </div>
   );
 }
+
+HeroKpi.propTypes = {
+  span: PropTypes.string,
+  tone: PropTypes.oneOf(["green", "terracotta"]).isRequired,
+  icon: PropTypes.elementType.isRequired,
+  label: PropTypes.node.isRequired,
+  value: PropTypes.number.isRequired,
+  caption: PropTypes.node,
+  pill: PropTypes.node,
+  trendKey: PropTypes.string,
+  trend: PropTypes.arrayOf(PropTypes.object).isRequired,
+};

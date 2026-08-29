@@ -1,4 +1,5 @@
 import { useState } from "react";
+import PropTypes from "prop-types";
 import { Spinner } from "react-bootstrap";
 import { Play, Square, Lightbulb, LightbulbOff, Wrench, Plug, RefreshCw, TriangleAlert } from "lucide-react";
 import { CardHeader } from "../ui/Card.jsx";
@@ -50,6 +51,18 @@ function ControlTile({ icon: Icon, label, pendingLabel, blockedLabel, pending, b
     </button>
   );
 }
+
+ControlTile.propTypes = {
+  icon: PropTypes.elementType.isRequired,
+  label: PropTypes.node.isRequired,
+  pendingLabel: PropTypes.node.isRequired,
+  blockedLabel: PropTypes.node,
+  pending: PropTypes.bool,
+  blocked: PropTypes.bool,
+  tone: PropTypes.oneOf(Object.keys(TILE_TONE)),
+  onClick: PropTypes.func.isRequired,
+  wide: PropTypes.bool,
+};
 
 export function ControlPanel() {
   const { status, sendCommand } = useSystem();
