@@ -1,3 +1,4 @@
+import { lazy, Suspense } from "react";
 import { Navigate, Outlet, Route, Routes } from "react-router-dom";
 import { useAuth } from "./context/AuthProvider.jsx";
 import { SystemProvider } from "./context/SystemProvider.jsx";
@@ -5,14 +6,18 @@ import { RequireAuth } from "./components/auth/RequireAuth.jsx";
 import { RequireAdmin } from "./components/auth/RequireAdmin.jsx";
 import { SplashScreen } from "./components/auth/SplashScreen.jsx";
 import LoginPage from "./pages/LoginPage.jsx";
-import OverviewPage from "./pages/OverviewPage.jsx";
-import HistoryPage from "./pages/HistoryPage.jsx";
-import RejectedPage from "./pages/RejectedPage.jsx";
-import ReportsPage from "./pages/ReportsPage.jsx";
-import ModelsPage from "./pages/ModelsPage.jsx";
-import UsersPage from "./pages/UsersPage.jsx";
-import SettingsPage from "./pages/SettingsPage.jsx";
-import HelpPage from "./pages/HelpPage.jsx";
+
+// Paginas protegidas: se cargan bajo demanda (una sola se ve a la vez) en
+// vez de entrar todas al bundle inicial -- Reportes y Resumen ya arrastran
+// recharts, que no hace falta antes del primer login.
+const OverviewPage = lazy(() => import("./pages/OverviewPage.jsx"));
+const HistoryPage = lazy(() => import("./pages/HistoryPage.jsx"));
+const RejectedPage = lazy(() => import("./pages/RejectedPage.jsx"));
+const ReportsPage = lazy(() => import("./pages/ReportsPage.jsx"));
+const ModelsPage = lazy(() => import("./pages/ModelsPage.jsx"));
+const UsersPage = lazy(() => import("./pages/UsersPage.jsx"));
+const SettingsPage = lazy(() => import("./pages/SettingsPage.jsx"));
+const HelpPage = lazy(() => import("./pages/HelpPage.jsx"));
 
 // El estado en vivo (SystemProvider) solo tiene sentido una vez autenticado,
 // así que se monta como layout route dentro del árbol protegido en vez de
@@ -20,7 +25,9 @@ import HelpPage from "./pages/HelpPage.jsx";
 function SystemLayout() {
   return (
     <SystemProvider>
-      <Outlet />
+      <Suspense fallback={<SplashScreen />}>
+        <Outlet />
+      </Suspense>
     </SystemProvider>
   );
 }

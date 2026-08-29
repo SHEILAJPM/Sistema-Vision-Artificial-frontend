@@ -34,6 +34,8 @@ function ControlTile({ icon: Icon, label, pendingLabel, blockedLabel, pending, b
     <button
       type="button"
       disabled={disabled}
+      aria-busy={pending}
+      aria-disabled={disabled}
       onClick={onClick}
       className={`focus-ring group flex items-center gap-3 rounded-xl border border-line bg-panel px-4 py-3.5 text-left transition-[background-color,border-color,color,transform] duration-150 hover:border-line-strong hover:-translate-y-px active:translate-y-0 active:scale-[0.97] disabled:opacity-60 disabled:hover:translate-y-0 ${
         pending ? "disabled:cursor-wait" : "disabled:cursor-not-allowed"
@@ -96,7 +98,11 @@ export function ControlPanel() {
       </div>
 
       {error && (
-        <div className="relative mb-4 flex items-center gap-2 rounded-lg border border-terracotta-100 bg-terracotta-50 px-3.5 py-2.5 text-xs text-terracotta-600">
+        <div
+          role="alert"
+          aria-live="assertive"
+          className="relative mb-4 flex items-center gap-2 rounded-lg border border-terracotta-100 bg-terracotta-50 px-3.5 py-2.5 text-xs text-terracotta-600"
+        >
           <TriangleAlert size={14} strokeWidth={2} className="shrink-0" />
           {error}
         </div>
