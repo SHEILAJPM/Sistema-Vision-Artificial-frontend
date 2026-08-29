@@ -1,3 +1,4 @@
+import { AnimatePresence, motion } from "motion/react";
 import { ImageOff, Radio } from "lucide-react";
 import { Placeholder } from "react-bootstrap";
 import { Card, CardHeader } from "../ui/Card.jsx";
@@ -119,49 +120,61 @@ export function EventsTable({
                 </td>
               </tr>
             )}
-            {statsLoaded && rows.map((ev, i) => {
-              const isOk = ev.result === "ok";
-              return (
-                <tr
-                  key={ev.id}
-                  className={`animate-row-in border-b border-l-2 border-line last:border-0 transition-colors duration-150 hover:bg-panel/60 ${
-                    isOk ? "border-l-transparent" : "border-l-terracotta-300"
-                  }`}
-                  style={{ animationDelay: `${Math.min(i * 35, 350)}ms` }}
-                >
-                  <td className="px-5 py-2.5">
-                    {ev.thumbnail ? (
-                      <img src={ev.thumbnail} alt="" className="h-9 w-9 rounded-md object-cover border border-line" />
-                    ) : (
-                      <div
-                        className={`flex h-9 w-9 items-center justify-center rounded-md border ${
-                          isOk ? "border-green-100 bg-green-50 text-green-500" : "border-terracotta-100 bg-terracotta-50 text-terracotta-500"
-                        }`}
-                      >
-                        <ImageOff size={14} strokeWidth={1.5} />
-                      </div>
-                    )}
-                  </td>
-                  <td className="px-3 py-2.5 text-ink-soft tnum">{formatTime.format(new Date(ev.timestamp))}</td>
-                  <td className="px-3 py-2.5">
-                    <Badge tone={isOk ? "ok" : "rejected"}>{isOk ? "OK" : "Rechazado"}</Badge>
-                  </td>
-                  {showModelColumn && (
-                    <td className="px-3 py-2.5">
-                      {ev.model ? (
-                        <Badge tone="neutral">{ev.model === "ambos" ? "A + B" : `Modelo ${ev.model}`}</Badge>
-                      ) : (
-                        <span className="text-ink-faint">--</span>
+            {/* Entrada/salida con motion (aporte de Sheila): un flash de color
+                tenue que se desvanece al montar, y las filas ahora salen con
+                fade en vez de desaparecer de golpe cuando el limit las corta.
+                El resto de la fila (chip de miniatura por color, columna de
+                modelo, barra de confianza) es contenido propio, no se pierde
+                al sumar la animación. */}
+            <AnimatePresence initial={false}>
+              {statsLoaded &&
+                rows.map((ev) => {
+                  const isOk = ev.result === "ok";
+                  return (
+                    <motion.tr
+                      key={ev.id}
+                      initial={{ opacity: 0, y: -10, backgroundColor: isOk ? "rgba(47,82,51,0.12)" : "rgba(166,83,46,0.12)" }}
+                      animate={{ opacity: 1, y: 0, backgroundColor: "rgba(0,0,0,0)" }}
+                      exit={{ opacity: 0 }}
+                      transition={{ duration: 0.45, ease: "easeOut" }}
+                      className={`border-b border-l-2 border-line last:border-0 hover:bg-panel/60 ${
+                        isOk ? "border-l-transparent" : "border-l-terracotta-300"
+                      }`}
+                    >
+                      <td className="px-5 py-2.5">
+                        {ev.thumbnail ? (
+                          <img src={ev.thumbnail} alt="" className="h-9 w-9 rounded-md object-cover border border-line" />
+                        ) : (
+                          <div
+                            className={`flex h-9 w-9 items-center justify-center rounded-md border ${
+                              isOk ? "border-green-100 bg-green-50 text-green-500" : "border-terracotta-100 bg-terracotta-50 text-terracotta-500"
+                            }`}
+                          >
+                            <ImageOff size={14} strokeWidth={1.5} />
+                          </div>
+                        )}
+                      </td>
+                      <td className="px-3 py-2.5 text-ink-soft tnum">{formatTime.format(new Date(ev.timestamp))}</td>
+                      <td className="px-3 py-2.5">
+                        <Badge tone={isOk ? "ok" : "rejected"}>{isOk ? "OK" : "Rechazado"}</Badge>
+                      </td>
+                      {showModelColumn && (
+                        <td className="px-3 py-2.5">
+                          {ev.model ? (
+                            <Badge tone="neutral">{ev.model === "ambos" ? "A + B" : `Modelo ${ev.model}`}</Badge>
+                          ) : (
+                            <span className="text-ink-faint">--</span>
+                          )}
+                        </td>
                       )}
-                    </td>
-                  )}
-                  <td className="px-3 py-2.5 text-ink-soft">{ev.action}</td>
-                  <td className="px-3 py-2.5 pr-5 text-right text-ink-soft">
-                    <ConfidenceBar value={ev.confidence} isOk={isOk} />
-                  </td>
-                </tr>
-              );
-            })}
+                      <td className="px-3 py-2.5 text-ink-soft">{ev.action}</td>
+                      <td className="px-3 py-2.5 pr-5 text-right text-ink-soft">
+                        <ConfidenceBar value={ev.confidence} isOk={isOk} />
+                      </td>
+                    </motion.tr>
+                  );
+                })}
+            </AnimatePresence>
           </tbody>
         </table>
       </div>

@@ -77,6 +77,35 @@ export const mockModelStatus = {
   errores_carga: {},
 };
 
+export const mockReport = {
+  range: { start: "2026-08-18", end: "2026-08-24" },
+  totals: { inspected: 3210, ok: 2985, rejected: 225, rejectRate: 7.0 },
+  dailySeries: [
+    { date: "2026-08-18", inspeccionadas: 450, rechazadas: 30 },
+    { date: "2026-08-19", inspeccionadas: 480, rechazadas: 35 },
+    { date: "2026-08-20", inspeccionadas: 460, rechazadas: 28 },
+    { date: "2026-08-21", inspeccionadas: 470, rechazadas: 33 },
+    { date: "2026-08-22", inspeccionadas: 440, rechazadas: 31 },
+    { date: "2026-08-23", inspeccionadas: 455, rechazadas: 34 },
+    { date: "2026-08-24", inspeccionadas: 455, rechazadas: 34 },
+  ],
+  byModel: [
+    { model: "A", inspeccionadas: 1605, rechazadas: 118, rejectRate: 7.4 },
+    { model: "B", inspeccionadas: 1605, rechazadas: 107, rejectRate: 6.7 },
+  ],
+  defects: [
+    { defect: "mancha", count: 96 },
+    { defect: "podrido", count: 62 },
+    { defect: "deformacion", count: 41 },
+    { defect: "color_irregular", count: 26 },
+  ],
+};
+
+export const mockUsers = [
+  { id: 1, username: "operador", name: "Operador demo", role: "Admin", active: true },
+  { id: 2, username: "jrodriguez", name: "Jose Rodriguez", role: "Operador", active: true },
+];
+
 export const mockModelComparison = {
   por_modelo: {
     A: { inspecciones: 428, confianza_promedio: 0.93, latencia_promedio_ms: 38, defectuosos_detectados: 31 },

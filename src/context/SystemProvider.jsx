@@ -13,6 +13,7 @@ import {
   getModelStatus,
   getModelComparison,
   postModelSelect,
+  resolveMediaUrl,
 } from "../lib/api.js";
 import { useWebSocket } from "../lib/useWebSocket.js";
 import {
@@ -65,7 +66,9 @@ export function SystemProvider({ children }) {
         setStatsLoaded(true);
         break;
       case "event":
-        setEvents((prev) => [msg.data, ...prev].slice(0, 100));
+        setEvents((prev) =>
+          [{ ...msg.data, thumbnail: resolveMediaUrl(msg.data.thumbnail) }, ...prev].slice(0, 100)
+        );
         break;
       case "detections":
         // { boxes: [{x,y,w,h,label,confidence}], frame_w, frame_h }
@@ -93,7 +96,7 @@ export function SystemProvider({ children }) {
       setStatus((prev) => ({ ...prev, ...s }));
       setStats((prev) => ({ ...prev, ...st }));
       setStatsLoaded(true);
-      setEvents(ev);
+      setEvents(ev.map((e) => ({ ...e, thumbnail: resolveMediaUrl(e.thumbnail) })));
       setBackendReachable(true);
       setLastError(null);
     } catch (err) {

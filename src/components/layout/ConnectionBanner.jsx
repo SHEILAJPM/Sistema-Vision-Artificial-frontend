@@ -2,10 +2,12 @@ import { Fade } from "react-bootstrap";
 import { TriangleAlert } from "lucide-react";
 import { useSystem } from "../../context/SystemProvider.jsx";
 
-// Banner de advertencia, visible pero sin colores alarmantes: usa el coral
-// suave de la paleta, nunca rojo saturado ni brillos. El Fade de Bootstrap le
-// da una entrada/salida suave en vez de aparecer/desaparecer de golpe --
-// justo el tipo de conexión/desconexión que un operador necesita notar.
+// Banner de advertencia, visible pero sin colores alarmantes: usa el
+// terracota suave de la paleta, nunca rojo saturado ni brillos. El Fade de
+// Bootstrap le da una entrada/salida suave en vez de aparecer/desaparecer de
+// golpe -- justo el tipo de conexión/desconexión que un operador necesita
+// notar. El ícono pulsa (animate-pulse-soft, ya definido en el proyecto) para
+// reforzar "esto sigue activo" sin sumar una libreria de animacion nueva.
 export function ConnectionBanner() {
   const { connectionOk, status, lastError } = useSystem();
 
@@ -20,7 +22,7 @@ export function ConnectionBanner() {
   return (
     <Fade in={visible} unmountOnExit>
       <div className="flex items-center gap-3 border-b border-terracotta-100 bg-terracotta-50 px-6 py-2.5">
-        <TriangleAlert size={16} className="text-terracotta-600 shrink-0" strokeWidth={2} />
+        <TriangleAlert size={16} className="text-terracotta-600 shrink-0 animate-pulse-soft" strokeWidth={2} />
         <p className="text-sm text-terracotta-600">
           {message}
           {lastError && <span className="text-terracotta-500 opacity-70"> ({lastError})</span>}

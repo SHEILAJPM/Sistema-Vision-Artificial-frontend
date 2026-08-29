@@ -51,7 +51,12 @@ function ControlTile({ icon: Icon, label, pendingLabel, blockedLabel, pending, b
 
 export function ControlPanel() {
   const { status, sendCommand } = useSystem();
-  const [pending, setPending] = useState(null);
+  // Set (no un solo string, aporte de Sheila): los tiles son acciones
+  // independientes, un comando en vuelo no debe afectar el estado
+  // "disabled" de los demás -- con un solo string, tocar "Probar servo"
+  // mientras "Iniciar banda" seguia en vuelo pisaba silenciosamente el
+  // pending de banda.
+  const [pending, setPending] = useState(() => new Set());
   // El banner de conexion (ConnectionBanner) solo cubre backend/Arduino
   // caidos. Si un comando falla por otro motivo, antes no se veia nada mas
   // que el spinner desapareciendo (hallazgo P1 de /impeccable critique).
@@ -62,10 +67,14 @@ export function ControlPanel() {
   const arduinoConnected = status?.arduino === "connected";
 
   const run = async (command) => {
-    setPending(command);
+    setPending((prev) => new Set(prev).add(command));
     const res = await sendCommand(command);
     setError(res.ok ? null : res.error ?? "El comando no se pudo ejecutar.");
-    setPending(null);
+    setPending((prev) => {
+      const next = new Set(prev);
+      next.delete(command);
+      return next;
+    });
   };
 
   return (
@@ -99,7 +108,7 @@ export function ControlPanel() {
           label={bandaRunning ? "Detener banda" : "Iniciar banda"}
           pendingLabel={bandaRunning ? "Deteniendo..." : "Iniciando..."}
           blockedLabel="Sin conexión"
-          pending={pending === "START" || pending === "STOP"}
+          pending={pending.has("START") || pending.has("STOP")}
           blocked={!arduinoConnected}
           tone={bandaRunning ? "danger" : "primary"}
           onClick={() => run(bandaRunning ? "STOP" : "START")}
@@ -110,7 +119,7 @@ export function ControlPanel() {
           label={luzOn ? "Apagar luz" : "Encender luz"}
           pendingLabel="Cambiando..."
           blockedLabel="Sin conexión"
-          pending={pending === "LIGHT_ON" || pending === "LIGHT_OFF"}
+          pending={pending.has("LIGHT_ON") || pending.has("LIGHT_OFF")}
           blocked={!arduinoConnected}
           tone="neutral"
           onClick={() => run(luzOn ? "LIGHT_OFF" : "LIGHT_ON")}
@@ -121,7 +130,7 @@ export function ControlPanel() {
           label="Probar servo"
           pendingLabel="Probando..."
           blockedLabel="Sin conexión"
-          pending={pending === "TEST_SERVO"}
+          pending={pending.has("TEST_SERVO")}
           blocked={!arduinoConnected}
           tone="primary"
           onClick={() => run("TEST_SERVO")}
@@ -131,7 +140,7 @@ export function ControlPanel() {
           icon={RefreshCw}
           label="Reiniciar conexión con Arduino"
           pendingLabel="Reconectando..."
-          pending={pending === "RECONNECT_ARDUINO"}
+          pending={pending.has("RECONNECT_ARDUINO")}
           tone="neutral"
           wide
           onClick={() => run("RECONNECT_ARDUINO")}

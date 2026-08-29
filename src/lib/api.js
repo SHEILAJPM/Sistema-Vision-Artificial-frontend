@@ -86,4 +86,53 @@ export const postModelSelect = (modelo) =>
 // GET /api/model/comparacion -> { por_modelo, comparacion_directa, modelo_activo }
 export const getModelComparison = () => request("/api/model/comparacion");
 
+// GET /api/reports/summary?start=YYYY-MM-DD&end=YYYY-MM-DD ->
+//   { range, totals: {inspected, ok, rejected, rejectRate}, dailySeries, byModel, defects }
+export const getReportSummary = (start, end) => request(`/api/reports/summary?start=${start}&end=${end}`);
+
+// GET /api/reports/export?start=...&end=... -> descarga el PDF del reporte del rango dado.
+// No puede ser un <a href> plano: el endpoint exige el header Authorization, así que se
+// trae como blob autenticado y se dispara la descarga manualmente.
+export async function downloadReportPdf(start, end) {
+  const token = getStoredToken();
+  const res = await fetch(`${API_BASE_URL}/api/reports/export?start=${start}&end=${end}`, {
+    headers: token ? { Authorization: `Bearer ${token}` } : {},
+  });
+  if (res.status === 401) {
+    unauthorizedHandler?.();
+    throw new Error("Sesión inválida o expirada");
+  }
+  if (!res.ok) {
+    const body = await res.text().catch(() => "");
+    throw new Error(`GET /api/reports/export -> HTTP ${res.status} ${body}`);
+  }
+  const blob = await res.blob();
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = `reporte_inspeccion_${start}_a_${end}.pdf`;
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  URL.revokeObjectURL(url);
+}
+
+// GET /api/users -> [{ id, username, name, role, active }]  (solo Admin)
+export const getUsers = () => request("/api/users");
+
+// POST /api/users  body: { username, password, name, role } -> usuario creado (solo Admin)
+export const postUser = (user) => request("/api/users", { method: "POST", body: JSON.stringify(user) });
+
+// DELETE /api/users/:id -- solo Admin; falla si es el propio usuario o el último Admin
+export const deleteUser = (id) => request(`/api/users/${id}`, { method: "DELETE" });
+
 export const videoFeedUrl = () => `${API_BASE_URL}${VIDEO_FEED_PATH}`;
+
+// Las miniaturas de eventos llegan como path relativo (ej. "/media/thumbnails/x.jpg")
+// tanto por REST (getEvents) como por WS ({type:"event"}); hay que anteponerles la
+// URL base del backend para poder usarlas directo como src de <img>.
+export const resolveMediaUrl = (path) => {
+  if (!path) return null;
+  if (/^https?:\/\//.test(path)) return path;
+  return `${API_BASE_URL}${path}`;
+};

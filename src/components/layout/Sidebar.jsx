@@ -1,6 +1,6 @@
 import { NavLink, useNavigate } from "react-router-dom";
 import { OverlayTrigger, Tooltip } from "react-bootstrap";
-import { LayoutGrid, History, PackageX, Cpu, SlidersHorizontal, CircleHelp, Leaf, LogOut } from "lucide-react";
+import { LayoutGrid, History, PackageX, FileText, Cpu, Users, SlidersHorizontal, CircleHelp, Leaf, LogOut } from "lucide-react";
 import { useSystem } from "../../context/SystemProvider.jsx";
 import { useAuth } from "../../context/AuthProvider.jsx";
 import { StatDot } from "../ui/StatDot.jsx";
@@ -20,11 +20,16 @@ function NavTooltip({ label, children }) {
 // <640px, en vez de mantener dos fuentes de verdad para las rutas del panel.
 // `short` es la etiqueta que entra en esa barra (espacio de sobra en el rail
 // de escritorio para el label completo, no en una barra de 6 columnas).
+// `adminOnly` (aporte de Sheila): Usuarios solo se lista para el rol Admin,
+// filtrado mas abajo -- RequireAdmin ya protege la ruta, esto evita mostrar
+// un link a una pantalla que igual va a redirigir.
 export const NAV_ITEMS = [
   { to: "/", label: "Resumen en vivo", short: "Resumen", icon: LayoutGrid, end: true },
   { to: "/historial", label: "Historial de inspecciones", short: "Historial", icon: History },
   { to: "/rechazadas", label: "Limones rechazados", short: "Rechazados", icon: PackageX },
+  { to: "/reportes", label: "Reportes", short: "Reportes", icon: FileText },
   { to: "/modelos-ia", label: "Modelos de IA", short: "Modelos", icon: Cpu },
+  { to: "/usuarios", label: "Usuarios", short: "Usuarios", icon: Users, adminOnly: true },
   { to: "/configuracion", label: "Configuración", short: "Config.", icon: SlidersHorizontal },
   { to: "/ayuda", label: "Ayuda", short: "Ayuda", icon: CircleHelp },
 ];
@@ -61,7 +66,7 @@ export function Sidebar() {
       </div>
 
       <nav className="flex-1 space-y-1">
-        {NAV_ITEMS.map(({ to, label, icon: Icon, end }) => (
+        {NAV_ITEMS.filter((item) => !item.adminOnly || user?.role === "Admin").map(({ to, label, icon: Icon, end }) => (
           <NavTooltip key={to} label={label}>
             <NavLink
               to={to}

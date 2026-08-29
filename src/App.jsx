@@ -2,12 +2,15 @@ import { Navigate, Outlet, Route, Routes } from "react-router-dom";
 import { useAuth } from "./context/AuthProvider.jsx";
 import { SystemProvider } from "./context/SystemProvider.jsx";
 import { RequireAuth } from "./components/auth/RequireAuth.jsx";
+import { RequireAdmin } from "./components/auth/RequireAdmin.jsx";
 import { SplashScreen } from "./components/auth/SplashScreen.jsx";
 import LoginPage from "./pages/LoginPage.jsx";
 import OverviewPage from "./pages/OverviewPage.jsx";
 import HistoryPage from "./pages/HistoryPage.jsx";
 import RejectedPage from "./pages/RejectedPage.jsx";
+import ReportsPage from "./pages/ReportsPage.jsx";
 import ModelsPage from "./pages/ModelsPage.jsx";
+import UsersPage from "./pages/UsersPage.jsx";
 import SettingsPage from "./pages/SettingsPage.jsx";
 import HelpPage from "./pages/HelpPage.jsx";
 
@@ -36,7 +39,11 @@ export default function App() {
           <Route path="/" element={<OverviewPage />} />
           <Route path="/historial" element={<HistoryPage />} />
           <Route path="/rechazadas" element={<RejectedPage />} />
+          <Route path="/reportes" element={<ReportsPage />} />
           <Route path="/modelos-ia" element={<ModelsPage />} />
+          <Route element={<RequireAdmin />}>
+            <Route path="/usuarios" element={<UsersPage />} />
+          </Route>
           <Route path="/configuracion" element={<SettingsPage />} />
           <Route path="/ayuda" element={<HelpPage />} />
         </Route>

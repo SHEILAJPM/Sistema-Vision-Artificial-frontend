@@ -128,7 +128,8 @@ export default function LoginPage() {
             <Fade in appear>
               <div className="mt-7 flex items-start gap-2.5 border-l-2 border-[#0F172A] bg-[#F8FAFC] px-4 py-3 text-xs text-[#0F172A]">
                 <Info size={14} strokeWidth={2} className="shrink-0 mt-px" />
-                Modo demo: cualquier usuario y contraseña funcionan.
+                Modo demo: cualquier usuario y contraseña funcionan. Usa un usuario que
+                contenga &quot;admin&quot; para probar la sección de Usuarios.
               </div>
             </Fade>
           )}
