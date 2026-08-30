@@ -3,14 +3,17 @@ import { History, CheckCircle2, PackageX } from "lucide-react";
 import { AppShell } from "../components/layout/AppShell.jsx";
 import { EventsTable } from "../components/overview/EventsTable.jsx";
 import { EventsFilterBar } from "../components/overview/EventsFilterBar.jsx";
+import { PurgeEventsCard } from "../components/overview/PurgeEventsCard.jsx";
 import { StatCard } from "../components/ui/StatCard.jsx";
 import { HeroKpi } from "../components/ui/HeroKpi.jsx";
 import { useSystem } from "../context/SystemProvider.jsx";
+import { useAuth } from "../context/AuthProvider.jsx";
 import { filterEventsByDate, eventsToCsv, downloadCsv } from "../lib/eventsExport.js";
 import { useCountUp } from "../lib/useCountUp.js";
 
 export default function HistoryPage() {
   const { events, stats } = useSystem();
+  const { user } = useAuth();
   const [dateFrom, setDateFrom] = useState("");
   const [dateTo, setDateTo] = useState("");
 
@@ -65,13 +68,17 @@ export default function HistoryPage() {
       />
 
       <EventsTable
+        key={`${dateFrom}|${dateTo}`}
         events={filtered}
-        limit={100}
+        paginate
+        pageSize={10}
         showDate
         title="Todos los eventos"
         subtitle="Limones inspeccionados, más recientes primero"
         emptyMessage="Ningún evento en el rango de fechas seleccionado."
       />
+
+      {user?.role === "Admin" && <PurgeEventsCard />}
     </AppShell>
   );
 }

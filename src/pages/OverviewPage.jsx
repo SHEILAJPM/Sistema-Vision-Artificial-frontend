@@ -50,13 +50,24 @@ export default function OverviewPage() {
 
       <FlowConnector />
 
-      <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
-        <div className="xl:col-span-2 animate-fade-up [animation-delay:260ms]">
-          <LiveFeed />
+      {/* Rig de 3 cámaras mirando el mismo punto de la banda al mismo
+          instante (ver backend app/camera_manager.py) -- 3 feeds en fila en
+          vez de uno solo, el panel de control queda debajo para no competir
+          por ancho con los 3 streams a la vez. */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="animate-fade-up [animation-delay:220ms]">
+          <LiveFeed cameraId="1" title="Cámara 1" />
         </div>
-        <div className="animate-fade-up [animation-delay:320ms]">
-          <ControlPanel />
+        <div className="animate-fade-up [animation-delay:260ms]">
+          <LiveFeed cameraId="2" title="Cámara 2" />
         </div>
+        <div className="animate-fade-up [animation-delay:300ms]">
+          <LiveFeed cameraId="3" title="Cámara 3" />
+        </div>
+      </div>
+
+      <div className="animate-fade-up [animation-delay:340ms]">
+        <ControlPanel />
       </div>
 
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">

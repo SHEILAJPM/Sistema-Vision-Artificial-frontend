@@ -1,10 +1,11 @@
 import { useState } from "react";
 import PropTypes from "prop-types";
 import { AnimatePresence, motion } from "motion/react";
-import { ImageOff, Radio } from "lucide-react";
+import { ImageOff, Radio, ChevronLeft, ChevronRight } from "lucide-react";
 import { Placeholder } from "react-bootstrap";
 import { Card, CardHeader } from "../ui/Card.jsx";
 import { Badge } from "../ui/Badge.jsx";
+import { Button } from "../ui/Button.jsx";
 import { EventDetailModal } from "./EventDetailModal.jsx";
 import { useSystem } from "../../context/SystemProvider.jsx";
 
@@ -33,6 +34,71 @@ function ConfidenceBar({ value, isOk }) {
         />
       </div>
       <span className="tnum">{pct}%</span>
+    </div>
+  );
+}
+
+// Números de página a mostrar: siempre primera, última, la actual y sus
+// vecinas inmediatas -- el resto colapsa en "…" para que la barra no crezca
+// sin límite cuando hay muchas páginas.
+function getPageNumbers(current, total) {
+  const keep = [...new Set([1, total, current - 1, current, current + 1])]
+    .filter((n) => n >= 1 && n <= total)
+    .sort((a, b) => a - b);
+
+  const pages = [];
+  let prev = 0;
+  for (const n of keep) {
+    if (prev && n - prev > 1) pages.push("…");
+    pages.push(n);
+    prev = n;
+  }
+  return pages;
+}
+
+function Pagination({ page, totalPages, total, pageSize, onChange }) {
+  if (totalPages <= 1) return null;
+  const from = (page - 1) * pageSize + 1;
+  const to = Math.min(page * pageSize, total);
+
+  return (
+    <div className="flex flex-wrap items-center justify-between gap-3 border-t border-line px-5 py-3">
+      <p className="text-xs text-ink-faint">
+        Mostrando <span className="tnum">{from}</span>–<span className="tnum">{to}</span> de <span className="tnum">{total}</span>
+      </p>
+      <div className="flex items-center gap-1.5">
+        <Button variant="outline" size="sm" icon={ChevronLeft} disabled={page === 1} onClick={() => onChange(page - 1)}>
+          Anterior
+        </Button>
+        {getPageNumbers(page, totalPages).map((n, i) =>
+          n === "…" ? (
+            <span key={`ellipsis-${i}`} className="px-1.5 text-xs text-ink-faint">
+              …
+            </span>
+          ) : (
+            <button
+              key={n}
+              onClick={() => onChange(n)}
+              aria-current={n === page ? "page" : undefined}
+              className={`focus-ring h-8 w-8 rounded-lg text-xs font-medium transition-colors ${
+                n === page ? "bg-green-500 text-white" : "text-ink-soft hover:bg-panel-alt"
+              }`}
+            >
+              {n}
+            </button>
+          )
+        )}
+        <Button
+          variant="outline"
+          size="sm"
+          icon={ChevronRight}
+          className="flex-row-reverse"
+          disabled={page === totalPages}
+          onClick={() => onChange(page + 1)}
+        >
+          Siguiente
+        </Button>
+      </div>
     </div>
   );
 }
@@ -68,12 +134,29 @@ export function EventsTable({
   // registro paginado, no un feed en vivo, así que el badge quedaría
   // engañoso ahí -- mismo criterio que `badge`/`headerRight` en AppShell.
   live = false,
+  // Historial/Rechazados: listas largas con paginación en vez del corte
+  // silencioso en `limit` (que escondía cualquier evento más allá del
+  // primer bloque sin dar forma de llegar al resto).
+  paginate = false,
+  pageSize = 10,
 }) {
   const { events: contextEvents, statsLoaded } = useSystem();
   const [selectedEvent, setSelectedEvent] = useState(null);
+  const [page, setPage] = useState(1);
   const events = eventsProp ?? contextEvents;
   const filtered = filterResult ? events.filter((ev) => ev.result === filterResult) : events;
-  const rows = filtered.slice(0, limit);
+
+  // En vista en vivo (sin filtro de fecha) `events` cambia de referencia en
+  // cada evento nuevo por WebSocket -- resetear la página en un efecto atado
+  // a esa referencia mandaría al usuario de vuelta a la página 1 cada vez que
+  // entra un limón. El padre (Historial/Rechazados) remonta este componente
+  // con una `key` cuando el rango de fechas de verdad cambia; acá solo hace
+  // falta no quedar apuntando a una página que ya no existe.
+  const totalPages = paginate ? Math.max(1, Math.ceil(filtered.length / pageSize)) : 1;
+  const currentPage = Math.min(page, totalPages);
+  const rows = paginate
+    ? filtered.slice((currentPage - 1) * pageSize, currentPage * pageSize)
+    : filtered.slice(0, limit);
   const formatTime = showDate ? dateFormatter : timeFormatter;
   // El campo `model` es opcional: solo aparece si el backend ya lo manda en
   // /api/events (util cuando corren A y B en paralelo y hay que saber quien
@@ -183,6 +266,9 @@ export function EventsTable({
           </tbody>
         </table>
       </div>
+      {paginate && statsLoaded && (
+        <Pagination page={currentPage} totalPages={totalPages} total={filtered.length} pageSize={pageSize} onChange={setPage} />
+      )}
       <EventDetailModal event={selectedEvent} onClose={() => setSelectedEvent(null)} />
     </Card>
   );
@@ -197,4 +283,6 @@ EventsTable.propTypes = {
   showDate: PropTypes.bool,
   emptyMessage: PropTypes.string,
   live: PropTypes.bool,
+  paginate: PropTypes.bool,
+  pageSize: PropTypes.number,
 };

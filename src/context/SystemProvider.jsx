@@ -30,15 +30,24 @@ const SystemContext = createContext(null);
 
 const EMPTY_STATS = { today: { inspected: 0, rejected: 0, rejectRate: 0 }, trend: [], distribution: { ok: 0, defectuosos: 0 } };
 const MODEL_POLL_MS = 4000;
+const EMPTY_CAMERA_DETECTIONS = { boxes: [], frame_w: 0, frame_h: 0 };
+// Rig de 3 cámaras fijas (mismo punto de la banda, mismo instante -- ver
+// backend app/camera_manager.py), así que `detections` se indexa por id de
+// cámara en vez de ser un único objeto.
+const EMPTY_DETECTIONS = { "1": EMPTY_CAMERA_DETECTIONS, "2": EMPTY_CAMERA_DETECTIONS, "3": EMPTY_CAMERA_DETECTIONS };
+
+// Las miniaturas de la galería por cámara de un evento llegan igual que la
+// principal: path relativo, hay que resolverlas contra la URL base (ver
+// resolveMediaUrl más abajo) tanto si vienen por WS como por REST.
+const resolveEventCameras = (cameras) =>
+  (cameras ?? []).map((c) => ({ ...c, thumbnail: resolveMediaUrl(c.thumbnail) }));
 
 export function SystemProvider({ children }) {
   const [status, setStatus] = useState(USE_MOCK_DATA ? mockStatus : null);
   const [stats, setStats] = useState(USE_MOCK_DATA ? mockStats : EMPTY_STATS);
   const [events, setEvents] = useState(USE_MOCK_DATA ? mockEvents : []);
   const [settings, setSettings] = useState(USE_MOCK_DATA ? mockSettings : null);
-  const [detections, setDetections] = useState(
-    USE_MOCK_DATA ? mockDetections : { boxes: [], frame_w: 0, frame_h: 0 }
-  ); // cajas YOLOv8 del frame actual
+  const [detections, setDetections] = useState(USE_MOCK_DATA ? mockDetections : EMPTY_DETECTIONS); // cajas YOLOv8 por cámara
   const [backendReachable, setBackendReachable] = useState(USE_MOCK_DATA);
   // Distingue "todavia no llego el primer stats" de "hoy va con 0 limones":
   // KpiCards/TrendChart/DistributionChart arrancan en EMPTY_STATS antes de
@@ -71,12 +80,29 @@ export function SystemProvider({ children }) {
         break;
       case "event":
         setEvents((prev) =>
-          [{ ...msg.data, thumbnail: resolveMediaUrl(msg.data.thumbnail) }, ...prev].slice(0, 100)
+          [
+            {
+              ...msg.data,
+              thumbnail: resolveMediaUrl(msg.data.thumbnail),
+              cameras: resolveEventCameras(msg.data.cameras),
+            },
+            ...prev,
+          ].slice(0, 100)
         );
         break;
       case "detections":
-        // { boxes: [{x,y,w,h,label,confidence}], frame_w, frame_h }
-        setDetections({ boxes: [], frame_w: 0, frame_h: 0, ...msg.data });
+        // { cameras: { "1": {boxes,frame_w,frame_h}, "2": {...}, "3": {...} } }
+        // Solo trae las cámaras que corrieron inferencia en este tick -- se
+        // mergea sobre lo anterior en vez de pisarlo entero, para que una
+        // cámara sin resultado nuevo conserve su último cuadro conocido.
+        setDetections((prev) => {
+          const camerasData = msg.data?.cameras ?? {};
+          const next = { ...prev };
+          for (const [cameraId, camDetections] of Object.entries(camerasData)) {
+            next[cameraId] = { ...EMPTY_CAMERA_DETECTIONS, ...camDetections };
+          }
+          return next;
+        });
         break;
       case "training_progress":
         // { run_id, target, epoch, epoch_total, loss, status }
@@ -104,7 +130,9 @@ export function SystemProvider({ children }) {
       setStatus((prev) => ({ ...prev, ...s }));
       setStats((prev) => ({ ...prev, ...st }));
       setStatsLoaded(true);
-      setEvents(ev.map((e) => ({ ...e, thumbnail: resolveMediaUrl(e.thumbnail) })));
+      setEvents(
+        ev.map((e) => ({ ...e, thumbnail: resolveMediaUrl(e.thumbnail), cameras: resolveEventCameras(e.cameras) }))
+      );
       setBackendReachable(true);
       setLastError(null);
     } catch (err) {

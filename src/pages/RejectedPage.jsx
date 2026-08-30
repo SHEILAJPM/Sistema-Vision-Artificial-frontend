@@ -63,8 +63,10 @@ export default function RejectedPage() {
       />
 
       <EventsTable
+        key={`${dateFrom}|${dateTo}`}
         events={filtered}
-        limit={100}
+        paginate
+        pageSize={10}
         showDate
         title="Limones rechazados"
         subtitle="El servo de rechazo se activó en cada uno de estos limones"

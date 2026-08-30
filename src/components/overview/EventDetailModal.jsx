@@ -81,6 +81,46 @@ export function EventDetailModal({ event, onClose }) {
             )}
           </div>
 
+          {/* Rig de 3 cámaras (mismo instante, distinto ángulo, ver backend
+              InspectionService._process_results): la miniatura grande de
+              arriba es la de la cámara que decidió el veredicto -- acá abajo
+              se ven las 3, para revisar un rechazo desde los otros ángulos. */}
+          {event.cameras?.length > 0 && (
+            <div>
+              <p className="text-xs text-ink-faint mb-1.5">Las 3 cámaras del rig</p>
+              <div className="grid grid-cols-3 gap-2">
+                {event.cameras.map((cam) => (
+                  <div
+                    key={cam.cameraId}
+                    className={`overflow-hidden rounded-lg ring-1 ring-inset ${
+                      cam.rejected
+                        ? "ring-terracotta-300"
+                        : cam.cameraId === event.cameraId
+                        ? "ring-green-400"
+                        : "ring-line"
+                    }`}
+                  >
+                    {cam.thumbnail ? (
+                      <img
+                        src={cam.thumbnail}
+                        alt={`Cámara ${cam.cameraId}`}
+                        className="h-20 w-full object-cover bg-panel-alt"
+                      />
+                    ) : (
+                      <div className="flex h-20 items-center justify-center bg-panel-alt text-ink-faint">
+                        <ImageOff size={14} strokeWidth={1.5} />
+                      </div>
+                    )}
+                    <div className="flex items-center justify-between px-1.5 py-1 text-[10px] text-ink-faint">
+                      <span>Cám. {cam.cameraId}</span>
+                      <span className="tnum">{Math.round((cam.confidence ?? 0) * 100)}%</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
           <dl className="grid grid-cols-2 gap-x-4 gap-y-3 text-sm">
             <div>
               <dt className="text-xs text-ink-faint">Fecha y hora</dt>
@@ -98,6 +138,12 @@ export function EventDetailModal({ event, onClose }) {
               <dt className="text-xs text-ink-faint">Modelo</dt>
               <dd className="text-ink">{event.model ? MODEL_LABELS[event.model] ?? event.model : "--"}</dd>
             </div>
+            {event.cameraId && (
+              <div>
+                <dt className="text-xs text-ink-faint">Cámara que decidió</dt>
+                <dd className="text-ink">Cámara {event.cameraId}</dd>
+              </div>
+            )}
           </dl>
 
           <div>
@@ -130,8 +176,17 @@ EventDetailModal.propTypes = {
     action: PropTypes.string,
     confidence: PropTypes.number,
     thumbnail: PropTypes.string,
+    cameraId: PropTypes.string,
     model: PropTypes.string,
     defects: PropTypes.arrayOf(PropTypes.string),
+    cameras: PropTypes.arrayOf(
+      PropTypes.shape({
+        cameraId: PropTypes.string,
+        thumbnail: PropTypes.string,
+        confidence: PropTypes.number,
+        rejected: PropTypes.bool,
+      })
+    ),
   }),
   onClose: PropTypes.func.isRequired,
 };

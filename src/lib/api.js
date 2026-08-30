@@ -84,12 +84,22 @@ export const postControl = (command, payload = {}) =>
 // GET /api/stats -> { today, trend, distribution }
 export const getStats = () => request("/api/stats");
 
-// GET /api/events?limit=50 -> [{ id, timestamp, result, action, confidence, thumbnail, model? }]
+// GET /api/events?limit=50 ->
+//   [{ id, timestamp, result, action, confidence, thumbnail, cameraId, model?, cameras }]
 // `model` ("A" | "B" | "ambos") es opcional -- si el backend lo manda, la
 // tabla de eventos muestra qué modelo decidió cada pieza; si no, oculta la columna.
+// `cameras` trae la miniatura + confianza de cada una de las 3 cámaras del
+// rig que participó en esa pieza (ver EventDetailModal.jsx).
 export const getEvents = (limit = 50) => request(`/api/events?limit=${limit}`);
 
-// GET /api/settings -> { pwmSpeed, confidenceThreshold, camera, cameras, esp32Host, esp32Port }
+// POST /api/events/purge body: { before: "YYYY-MM-DD", confirm } (solo Admin)
+// confirm=false -> vista previa ({ eventos_a_eliminar }), confirm=true -> borra de verdad
+// ({ eventos_eliminados, miniaturas_eliminadas }). Borra también las miniaturas en disco.
+export const postPurgeEvents = (before, confirm = false) =>
+  request("/api/events/purge", { method: "POST", body: JSON.stringify({ before, confirm }) });
+
+// GET /api/settings ->
+//   { pwmSpeed, confidenceThreshold, camera1, camera2, camera3, camerasAvailable, esp32Host, esp32Port }
 export const getSettings = () => request("/api/settings");
 
 // POST /api/settings  body: partial settings object
@@ -163,8 +173,13 @@ export async function postInspectImage(file, { conf, iou } = {}) {
 
 // --- Dataset (banco de imágenes para reentrenar el Modelo A) ---
 
-// GET /api/dataset/classes -> { clases: [...] }
+// GET /api/dataset/classes -> { clases: [...] (Modelo A, cajas), clases_imagen_completa: [...] (Modelo B) }
 export const getDatasetClasses = () => request("/api/dataset/classes");
+
+// PUT /api/dataset/images/:id/class body: { class_label } -> clasifica la imagen completa;
+// sirve a la vez para el Modelo A (class_label) y el B (copia el archivo a raw/<clase>/).
+export const putImageClass = (id, classLabel) =>
+  request(`/api/dataset/images/${id}/class`, { method: "PUT", body: JSON.stringify({ class_label: classLabel }) });
 
 // GET /api/dataset/stats -> { total_imagenes, anotadas, por_clase }
 export const getDatasetStats = () => request("/api/dataset/stats");
@@ -222,7 +237,10 @@ export const postTrainCancel = (id) => request(`/api/train/runs/${id}/cancel`, {
 // POST /api/train/runs/:id/promote -- copia el checkpoint a producción y recarga el modelo en caliente
 export const postTrainPromote = (id) => request(`/api/train/runs/${id}/promote`, { method: "POST" });
 
-export const videoFeedUrl = () => `${API_BASE_URL}${VIDEO_FEED_PATH}`;
+// cameraId: "1" | "2" | "3" (rig de 3 cámaras, ver LiveFeed.jsx). Sin
+// argumento apunta a la cámara "1" (mismo alias de compat que expone el
+// backend en /api/video_feed, ver app/api/stream.py).
+export const videoFeedUrl = (cameraId = "1") => `${API_BASE_URL}${VIDEO_FEED_PATH}/${cameraId}`;
 
 // Las miniaturas de eventos llegan como path relativo (ej. "/media/thumbnails/x.jpg")
 // tanto por REST (getEvents) como por WS ({type:"event"}); hay que anteponerles la

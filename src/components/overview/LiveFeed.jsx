@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import PropTypes from "prop-types";
 import { AnimatePresence, motion } from "motion/react";
 import { CameraOff, Radio } from "lucide-react";
 import { Card, CardHeader } from "../ui/Card.jsx";
@@ -7,14 +8,20 @@ import { ViewfinderCorners } from "../ui/ViewfinderCorners.jsx";
 import { useSystem } from "../../context/SystemProvider.jsx";
 import { videoFeedUrl, USE_MOCK_DATA } from "../../lib/api.js";
 
-// Feed de la cámara con overlay de cajas YOLOv8 dibujado en el cliente.
+const EMPTY_CAMERA_DETECTIONS = { boxes: [], frame_w: 0, frame_h: 0 };
+
+// Feed de UNA cámara del rig (mismo componente, 3 instancias en
+// OverviewPage con cameraId="1"/"2"/"3" -- las 3 miran el mismo punto de la
+// banda al mismo instante, ver backend app/camera_manager.py) con overlay
+// de cajas YOLOv8 dibujado en el cliente.
 //
-// El backend expone el stream MJPEG ya listo (endpoint /api/video_feed via
-// <img>), que es el método más simple y liviano para OpenCV + Flask/FastAPI.
+// El backend expone el stream MJPEG ya listo (endpoint /api/video_feed/{id}
+// via <img>), que es el método más simple y liviano para OpenCV + FastAPI.
 // Las cajas de detección, en cambio, llegan aparte por WebSocket (mensajes
-// {type:"detections", data:{boxes,frame_w,frame_h}}) y se dibujan con divs
-// posicionados sobre el video: asi el estilo de las cajas/etiquetas sigue la
-// paleta del dashboard en vez de quedar "quemado" en el frame por OpenCV.
+// {type:"detections", data:{cameras:{"1":{boxes,frame_w,frame_h}, ...}}})
+// y se dibujan con divs posicionados sobre el video: asi el estilo de las
+// cajas/etiquetas sigue la paleta del dashboard en vez de quedar "quemado"
+// en el frame por OpenCV.
 // Modelo B (ResNet18) clasifica el frame completo, no localiza limones
 // individuales: no tiene sentido pedirle cajas, así que el subtítulo y el
 // mensaje del overlay siguen a `seleccion_activa` en vez de asumir YOLOv8.
@@ -24,8 +31,9 @@ const MODEL_COPY = {
   ambos: "Comparando YOLOv8 (A) y ResNet18 (B) en paralelo",
 };
 
-export function LiveFeed() {
-  const { detections, status, modelStatus } = useSystem();
+export function LiveFeed({ cameraId = "1", title = "Zona de inspección" }) {
+  const { detections: detectionsByCamera, status, modelStatus } = useSystem();
+  const detections = detectionsByCamera[cameraId] ?? EMPTY_CAMERA_DETECTIONS;
   const containerRef = useRef(null);
   const [box, setBox] = useState({ w: 0, h: 0 });
   const [feedOk, setFeedOk] = useState(true);
@@ -69,7 +77,7 @@ export function LiveFeed() {
   return (
     <Card padded={false} className="overflow-hidden">
       <div className="flex items-center justify-between px-5 pt-5">
-        <CardHeader title="Zona de inspección" subtitle={subtitle} />
+        <CardHeader title={title} subtitle={subtitle} />
         <div className="flex items-center gap-2 -mt-4">
           <Badge tone={status?.banda === "running" ? "info" : "neutral"}>
             <Radio size={12} strokeWidth={2.5} />
@@ -93,8 +101,8 @@ export function LiveFeed() {
       >
         {feedOk ? (
           <img
-            src={USE_MOCK_DATA ? undefined : videoFeedUrl()}
-            alt="Stream de cámara de inspección"
+            src={USE_MOCK_DATA ? undefined : videoFeedUrl(cameraId)}
+            alt={`Stream de ${title.toLowerCase()}`}
             className="h-full w-full object-cover"
             onError={() => setFeedOk(false)}
             style={USE_MOCK_DATA ? { display: "none" } : undefined}
@@ -200,3 +208,8 @@ export function LiveFeed() {
     </Card>
   );
 }
+
+LiveFeed.propTypes = {
+  cameraId: PropTypes.oneOf(["1", "2", "3"]),
+  title: PropTypes.string,
+};

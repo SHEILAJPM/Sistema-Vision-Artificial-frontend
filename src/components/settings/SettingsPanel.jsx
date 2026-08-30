@@ -93,7 +93,7 @@ export function SettingsPanel() {
       </Card>
 
       <Card>
-        <CardHeader icon={ScanIcon} title="Modelo de inspección" subtitle="YOLOv8 y selección de cámara" />
+        <CardHeader icon={ScanIcon} title="Modelo de inspección" subtitle="YOLOv8 y las 3 cámaras del rig" />
         <Field
           label="Umbral de confianza"
           hint="Confianza mínima para marcar un limón como defectuoso"
@@ -107,19 +107,25 @@ export function SettingsPanel() {
             format={(v) => `${Math.round(v * 100)}%`}
           />
         </Field>
-        <Field label="Cámara" hint="Fuente de video usada para la inspección">
-          <select
-            className={selectClass}
-            value={form.camera}
-            onChange={(e) => update({ camera: e.target.value })}
-          >
-            {form.cameras?.map((cam) => (
-              <option key={cam.id} value={cam.id}>
-                {cam.label}
-              </option>
-            ))}
-          </select>
-        </Field>
+        {[
+          { key: "camera1", label: "Cámara 1" },
+          { key: "camera2", label: "Cámara 2" },
+          { key: "camera3", label: "Cámara 3" },
+        ].map(({ key, label }) => (
+          <Field key={key} label={label} hint="Fuente de video de este ángulo del rig">
+            <select
+              className={selectClass}
+              value={form[key]}
+              onChange={(e) => update({ [key]: e.target.value })}
+            >
+              {form.camerasAvailable?.map((cam) => (
+                <option key={cam.id} value={cam.id}>
+                  {cam.label}
+                </option>
+              ))}
+            </select>
+          </Field>
+        ))}
       </Card>
 
       <Card>
