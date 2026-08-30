@@ -1,9 +1,11 @@
+import { useState } from "react";
 import PropTypes from "prop-types";
 import { AnimatePresence, motion } from "motion/react";
 import { ImageOff, Radio } from "lucide-react";
 import { Placeholder } from "react-bootstrap";
 import { Card, CardHeader } from "../ui/Card.jsx";
 import { Badge } from "../ui/Badge.jsx";
+import { EventDetailModal } from "./EventDetailModal.jsx";
 import { useSystem } from "../../context/SystemProvider.jsx";
 
 const timeFormatter = new Intl.DateTimeFormat("es", { hour: "2-digit", minute: "2-digit", second: "2-digit" });
@@ -68,6 +70,7 @@ export function EventsTable({
   live = false,
 }) {
   const { events: contextEvents, statsLoaded } = useSystem();
+  const [selectedEvent, setSelectedEvent] = useState(null);
   const events = eventsProp ?? contextEvents;
   const filtered = filterResult ? events.filter((ev) => ev.result === filterResult) : events;
   const rows = filtered.slice(0, limit);
@@ -134,11 +137,12 @@ export function EventsTable({
                   return (
                     <motion.tr
                       key={ev.id}
+                      onClick={() => setSelectedEvent(ev)}
                       initial={{ opacity: 0, y: -10, backgroundColor: isOk ? "rgba(47,82,51,0.12)" : "rgba(166,83,46,0.12)" }}
                       animate={{ opacity: 1, y: 0, backgroundColor: "rgba(0,0,0,0)" }}
                       exit={{ opacity: 0 }}
                       transition={{ duration: 0.45, ease: "easeOut" }}
-                      className={`border-b border-l-2 border-line last:border-0 hover:bg-panel/60 ${
+                      className={`cursor-pointer border-b border-l-2 border-line last:border-0 hover:bg-panel/60 ${
                         isOk ? "border-l-transparent" : "border-l-terracotta-300"
                       }`}
                     >
@@ -179,6 +183,7 @@ export function EventsTable({
           </tbody>
         </table>
       </div>
+      <EventDetailModal event={selectedEvent} onClose={() => setSelectedEvent(null)} />
     </Card>
   );
 }
