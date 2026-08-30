@@ -1,21 +1,30 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { ArrowLeft, Save, TriangleAlert, Check } from "lucide-react";
+import { ArrowLeft, Save, TriangleAlert, Check, Tag } from "lucide-react";
 import { AppShell } from "../components/layout/AppShell.jsx";
 import { Card, CardHeader } from "../components/ui/Card.jsx";
 import { Button } from "../components/ui/Button.jsx";
 import { AnnotationCanvas } from "../components/dataset/AnnotationCanvas.jsx";
-import { getDatasetImage, getDatasetClasses, getAnnotations, putAnnotations, datasetImageUrl } from "../lib/api.js";
+import {
+  getDatasetImage,
+  getDatasetClasses,
+  getAnnotations,
+  putAnnotations,
+  putImageClass,
+  datasetImageUrl,
+} from "../lib/api.js";
 
 export default function AnnotatePage() {
   const { imageId } = useParams();
   const navigate = useNavigate();
   const [image, setImage] = useState(null);
   const [classes, setClasses] = useState([]);
+  const [wholeImageClasses, setWholeImageClasses] = useState([]);
   const [boxes, setBoxes] = useState([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [classifying, setClassifying] = useState(false);
   const [error, setError] = useState(null);
 
   useEffect(() => {
@@ -27,6 +36,7 @@ export default function AnnotatePage() {
         if (cancelled) return;
         setImage(img);
         setClasses(cls.clases);
+        setWholeImageClasses(cls.clases_imagen_completa ?? []);
         setBoxes(ann.boxes);
       })
       .catch((err) => !cancelled && setError(err.message))
@@ -35,6 +45,18 @@ export default function AnnotatePage() {
       cancelled = true;
     };
   }, [imageId]);
+
+  const handleClassify = async (classLabel) => {
+    setClassifying(true);
+    setError(null);
+    try {
+      setImage(await putImageClass(imageId, classLabel));
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setClassifying(false);
+    }
+  };
 
   const handleSave = async () => {
     setSaving(true);
@@ -62,6 +84,34 @@ export default function AnnotatePage() {
         </Button>
       }
     >
+      {!loading && image && (
+        <Card>
+          <CardHeader
+            icon={Tag}
+            title="Clasificación de imagen completa"
+            subtitle="Para el Modelo B (clasificador) -- independiente de las cajas de abajo, que son para el Modelo A"
+          />
+          <div className="flex flex-wrap items-center gap-3">
+            <select
+              value={image.class_label ?? ""}
+              onChange={(e) => e.target.value && handleClassify(e.target.value)}
+              disabled={classifying}
+              className="focus-ring rounded-lg border border-line bg-canvas px-3 py-2 text-sm text-ink"
+            >
+              <option value="" disabled>
+                Sin clasificar
+              </option>
+              {wholeImageClasses.map((c) => (
+                <option key={c} value={c}>
+                  {c}
+                </option>
+              ))}
+            </select>
+            {classifying && <span className="text-xs text-ink-faint">Guardando...</span>}
+          </div>
+        </Card>
+      )}
+
       <Card>
         {loading ? (
           <p className="text-sm text-ink-faint">Cargando imagen...</p>
