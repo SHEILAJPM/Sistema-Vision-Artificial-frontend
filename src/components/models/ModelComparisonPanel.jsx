@@ -25,14 +25,23 @@ function ModelRowSkeleton({ label }) {
   );
 }
 
+// hint también se reusa como subtítulo de ModelStatusCard más abajo, y la
+// letra (value) como sufijo de la clave modelo_<letra>_cargado en
+// modelStatus (ver app/models/registry.py -> status()).
 const MODEL_OPTIONS = [
   { value: "A", label: "Modelo A", hint: "YOLOv8 - detección y localización" },
   { value: "B", label: "Modelo B", hint: "Clasificador ResNet18" },
   { value: "D", label: "Modelo D", hint: "YOLOv12 - detección y localización" },
   { value: "E", label: "Modelo E", hint: "YOLO26 - detección y localización" },
-  { value: "F", label: "Modelo F", hint: "Clasificador MobileNetV3" },
+  { value: "F", label: "Modelo F", hint: "Clasificador MobileNetV3-Small" },
+  { value: "G", label: "Modelo G", hint: "Clasificador MobileNetV3-Large" },
+  { value: "H", label: "Modelo H", hint: "Clasificador ShuffleNetV2" },
+  { value: "I", label: "Modelo I", hint: "Clasificador EfficientNet-B0" },
   { value: "ambos", label: "Comparar ambos", hint: "Ejecuta A y B en cada limon" },
 ];
+
+const STATUS_CARDS = MODEL_OPTIONS.filter((opt) => opt.value !== "ambos");
+const COMPARISON_KEYS = STATUS_CARDS.map((opt) => opt.value);
 
 // Página "Modelos de IA": permite elegir cuál modelo evalúa cada limón (o
 // correr los dos en paralelo) y muestra métricas comparativas calculadas por
@@ -79,7 +88,7 @@ export function ModelComparisonPanel() {
           title="Modelo activo"
           subtitle="Elige qué modelo evalúa cada limón, o compara ambos en paralelo"
         />
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
           {MODEL_OPTIONS.map((opt) => {
             const isActive = activo === opt.value;
             const isPending = pending === opt.value;
@@ -111,36 +120,15 @@ export function ModelComparisonPanel() {
       </Card>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        <ModelStatusCard
-          label="Modelo A"
-          hint="YOLOv8 (ultralytics)"
-          loaded={modelStatus?.modelo_a_cargado}
-          error={modelStatus?.errores_carga?.A}
-        />
-        <ModelStatusCard
-          label="Modelo B"
-          hint="Clasificador (ResNet18)"
-          loaded={modelStatus?.modelo_b_cargado}
-          error={modelStatus?.errores_carga?.B}
-        />
-        <ModelStatusCard
-          label="Modelo D"
-          hint="YOLOv12 (ultralytics)"
-          loaded={modelStatus?.modelo_d_cargado}
-          error={modelStatus?.errores_carga?.D}
-        />
-        <ModelStatusCard
-          label="Modelo E"
-          hint="YOLO26 (ultralytics)"
-          loaded={modelStatus?.modelo_e_cargado}
-          error={modelStatus?.errores_carga?.E}
-        />
-        <ModelStatusCard
-          label="Modelo F"
-          hint="Clasificador (MobileNetV3)"
-          loaded={modelStatus?.modelo_f_cargado}
-          error={modelStatus?.errores_carga?.F}
-        />
+        {STATUS_CARDS.map((opt) => (
+          <ModelStatusCard
+            key={opt.value}
+            label={opt.label}
+            hint={opt.hint}
+            loaded={modelStatus?.[`modelo_${opt.value.toLowerCase()}_cargado`]}
+            error={modelStatus?.errores_carga?.[opt.value]}
+          />
+        ))}
       </div>
 
       <Card padded={false}>
@@ -177,16 +165,9 @@ export function ModelComparisonPanel() {
               </tr>
             </thead>
             <tbody>
-              {!modelLoaded && (
-                <>
-                  <ModelRowSkeleton label="Modelo A" />
-                  <ModelRowSkeleton label="Modelo B" />
-                  <ModelRowSkeleton label="Modelo D" />
-                  <ModelRowSkeleton label="Modelo E" />
-                  <ModelRowSkeleton label="Modelo F" />
-                </>
-              )}
-              {modelLoaded && ["A", "B", "D", "E", "F"].map((key) => {
+              {!modelLoaded &&
+                COMPARISON_KEYS.map((key) => <ModelRowSkeleton key={key} label={`Modelo ${key}`} />)}
+              {modelLoaded && COMPARISON_KEYS.map((key) => {
                 const row = porModelo[key];
                 return (
                   <tr key={key} className="border-b border-line last:border-0">

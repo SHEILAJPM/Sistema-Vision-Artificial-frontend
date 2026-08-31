@@ -13,10 +13,13 @@ const TARGET_LABELS = {
   B: "Modelo B (clasificador ResNet18)",
   D: "Modelo D (YOLOv12, cajas)",
   E: "Modelo E (YOLO26, cajas)",
-  F: "Modelo F (clasificador MobileNetV3)",
+  F: "Modelo F (clasificador MobileNetV3-Small)",
+  G: "Modelo G (clasificador MobileNetV3-Large)",
+  H: "Modelo H (clasificador ShuffleNetV2)",
+  I: "Modelo I (clasificador EfficientNet-B0)",
 };
 
-const CLASSIFIER_TARGETS = ["B", "F"];
+const CLASSIFIER_TARGETS = ["B", "F", "G", "H", "I"];
 
 const STATUS_TONE = {
   queued: "neutral",
@@ -122,7 +125,10 @@ export default function TrainingPage() {
               <option value="B">Modelo B (clasificador ResNet18)</option>
               <option value="D">Modelo D (YOLOv12, cajas)</option>
               <option value="E">Modelo E (YOLO26, cajas)</option>
-              <option value="F">Modelo F (clasificador MobileNetV3)</option>
+              <option value="F">Modelo F (clasificador MobileNetV3-Small)</option>
+              <option value="G">Modelo G (clasificador MobileNetV3-Large)</option>
+              <option value="H">Modelo H (clasificador ShuffleNetV2)</option>
+              <option value="I">Modelo I (clasificador EfficientNet-B0)</option>
             </select>
           </label>
           <label className="text-sm">
