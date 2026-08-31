@@ -28,6 +28,9 @@ function ModelRowSkeleton({ label }) {
 const MODEL_OPTIONS = [
   { value: "A", label: "Modelo A", hint: "YOLOv8 - detección y localización" },
   { value: "B", label: "Modelo B", hint: "Clasificador ResNet18" },
+  { value: "D", label: "Modelo D", hint: "YOLOv12 - detección y localización" },
+  { value: "E", label: "Modelo E", hint: "YOLO26 - detección y localización" },
+  { value: "F", label: "Modelo F", hint: "Clasificador MobileNetV3" },
   { value: "ambos", label: "Comparar ambos", hint: "Ejecuta A y B en cada limon" },
 ];
 
@@ -76,7 +79,7 @@ export function ModelComparisonPanel() {
           title="Modelo activo"
           subtitle="Elige qué modelo evalúa cada limón, o compara ambos en paralelo"
         />
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-3">
           {MODEL_OPTIONS.map((opt) => {
             const isActive = activo === opt.value;
             const isPending = pending === opt.value;
@@ -107,7 +110,7 @@ export function ModelComparisonPanel() {
         </div>
       </Card>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         <ModelStatusCard
           label="Modelo A"
           hint="YOLOv8 (ultralytics)"
@@ -119,6 +122,24 @@ export function ModelComparisonPanel() {
           hint="Clasificador (ResNet18)"
           loaded={modelStatus?.modelo_b_cargado}
           error={modelStatus?.errores_carga?.B}
+        />
+        <ModelStatusCard
+          label="Modelo D"
+          hint="YOLOv12 (ultralytics)"
+          loaded={modelStatus?.modelo_d_cargado}
+          error={modelStatus?.errores_carga?.D}
+        />
+        <ModelStatusCard
+          label="Modelo E"
+          hint="YOLO26 (ultralytics)"
+          loaded={modelStatus?.modelo_e_cargado}
+          error={modelStatus?.errores_carga?.E}
+        />
+        <ModelStatusCard
+          label="Modelo F"
+          hint="Clasificador (MobileNetV3)"
+          loaded={modelStatus?.modelo_f_cargado}
+          error={modelStatus?.errores_carga?.F}
         />
       </div>
 
@@ -160,9 +181,12 @@ export function ModelComparisonPanel() {
                 <>
                   <ModelRowSkeleton label="Modelo A" />
                   <ModelRowSkeleton label="Modelo B" />
+                  <ModelRowSkeleton label="Modelo D" />
+                  <ModelRowSkeleton label="Modelo E" />
+                  <ModelRowSkeleton label="Modelo F" />
                 </>
               )}
-              {modelLoaded && ["A", "B"].map((key) => {
+              {modelLoaded && ["A", "B", "D", "E", "F"].map((key) => {
                 const row = porModelo[key];
                 return (
                   <tr key={key} className="border-b border-line last:border-0">

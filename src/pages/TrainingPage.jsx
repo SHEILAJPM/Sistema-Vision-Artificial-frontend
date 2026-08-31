@@ -8,7 +8,15 @@ import { Badge } from "../components/ui/Badge.jsx";
 import { useSystem } from "../context/SystemProvider.jsx";
 import { postTrainStart, getTrainRuns, postTrainCancel, postTrainPromote, USE_MOCK_DATA } from "../lib/api.js";
 
-const TARGET_LABELS = { A: "Modelo A (YOLOv8, cajas)", B: "Modelo B (clasificador ResNet18)" };
+const TARGET_LABELS = {
+  A: "Modelo A (YOLOv8, cajas)",
+  B: "Modelo B (clasificador ResNet18)",
+  D: "Modelo D (YOLOv12, cajas)",
+  E: "Modelo E (YOLO26, cajas)",
+  F: "Modelo F (clasificador MobileNetV3)",
+};
+
+const CLASSIFIER_TARGETS = ["B", "F"];
 
 const STATUS_TONE = {
   queued: "neutral",
@@ -99,7 +107,7 @@ export default function TrainingPage() {
   const liveForRun = (runId) => (trainingProgress?.run_id === runId ? trainingProgress : null);
 
   return (
-    <AppShell title="Entrenamiento" subtitle="Reentrena el Modelo A o B en background y promueve el resultado a producción">
+    <AppShell title="Entrenamiento" subtitle="Reentrena cualquier modelo en background y promueve el resultado a producción">
       <Card>
         <CardHeader icon={Cpu} title="Nuevo entrenamiento" subtitle="Corre en un hilo aparte -- puedes seguir usando el dashboard" />
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -112,6 +120,9 @@ export default function TrainingPage() {
             >
               <option value="A">Modelo A (YOLOv8, cajas)</option>
               <option value="B">Modelo B (clasificador ResNet18)</option>
+              <option value="D">Modelo D (YOLOv12, cajas)</option>
+              <option value="E">Modelo E (YOLO26, cajas)</option>
+              <option value="F">Modelo F (clasificador MobileNetV3)</option>
             </select>
           </label>
           <label className="text-sm">
@@ -136,7 +147,7 @@ export default function TrainingPage() {
               className="focus-ring w-full rounded-lg border border-line bg-canvas px-3 py-2 text-sm text-ink"
             />
           </label>
-          {target === "A" && (
+          {!CLASSIFIER_TARGETS.includes(target) && (
             <label className="text-sm">
               <span className="block text-xs text-ink-faint mb-1">Tamaño de imagen (imgsz)</span>
               <input
@@ -150,7 +161,7 @@ export default function TrainingPage() {
               />
             </label>
           )}
-          {target === "B" && (
+          {CLASSIFIER_TARGETS.includes(target) && (
             <label className="flex items-center gap-2 text-sm text-ink self-end pb-2">
               <input
                 type="checkbox"
