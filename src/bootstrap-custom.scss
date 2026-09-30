@@ -1,0 +1,80 @@
+// Bootstrap "a la carta": el proyecto ya usa Tailwind para el 100% del
+// layout/spacing/tipografía (ver src/index.css y tailwind.config.js). Bootstrap
+// define utilidades con los MISMOS nombres que Tailwind pero valores distintos
+// (mt-3, p-4, d-flex, container, row, col-*), así que importar Bootstrap
+// completo rompería el spacing de todo el dashboard ya construido.
+//
+// En vez de eso, se importa solo el núcleo de variables/mixins + los
+// componentes que sí aportan algo que Tailwind no da "gratis": animación y
+// feedback de estado (Spinner, ProgressBar, Fade/Collapse, Toast). Nunca se
+// importan utilities.scss, helpers.scss, grid.scss ni containers.scss —
+// esa es justamente la capa que colisiona.
+@import "bootstrap/scss/functions";
+
+// Mismos tokens que tailwind.config.js -- los componentes de Bootstrap deben
+// verse como si fueran parte del mismo sistema, no un tema ajeno pegado encima.
+$primary: #2F5233; // green-500
+$success: #4C8A4E; // teal-500 -- estados "bueno"/conectado
+$danger: #A6532E; // terracotta-500 -- estados "rechazado"/advertencia
+$warning: #C6952A; // gold-500 -- iluminacion / advertencia suave
+$info: #3A6D3C; // teal-600
+$body-color: #2A2721; // ink
+$font-family-sans-serif: "Hanken Grotesk", system-ui, sans-serif;
+$border-radius: 0.5rem;
+$border-radius-sm: 0.375rem;
+$border-radius-lg: 0.75rem;
+$border-radius-pill: 999px;
+$enable-shadows: false;
+$enable-gradients: false;
+
+// Acordeón (FAQ de Ayuda) y tooltips (nav de solo ícono, toggles) alineados
+// al mismo panel-card/line/focus-ring que ya usa el resto del dashboard.
+$accordion-border-color: #E3D9C0; // line
+$accordion-bg: transparent;
+$accordion-border-radius: 1rem;
+$accordion-inner-border-radius: 0.9375rem;
+$accordion-button-color: #2A2721; // ink
+$accordion-button-active-color: #17291A; // green-700
+$accordion-button-active-bg: #E9F1E6; // green-50
+$accordion-button-focus-border-color: #6FA06B; // green-400
+$accordion-button-focus-box-shadow: 0 0 0 2px #6FA06B;
+$accordion-icon-color: #4E4A3B; // ink-soft
+$accordion-icon-active-color: #17291A; // green-700
+
+$tooltip-bg: #2A2721; // ink
+$tooltip-color: #FFFFFF;
+$tooltip-opacity: 0.96;
+$tooltip-border-radius: 0.5rem;
+$tooltip-font-size: 0.75rem;
+$tooltip-padding-y: 0.375rem;
+$tooltip-padding-x: 0.625rem;
+
+// Bootstrap anima el Fade con `opacity .15s linear` por defecto -- una
+// entrada/salida debería usar ease-out (empieza rápido, se siente con
+// respuesta), no linear. Afecta a los 4 banners/toast de la app que usan
+// <Fade> (ConnectionBanner, avisos del login, Toast de Configuración) de una
+// sola vez porque todos comparten esta variable.
+$transition-fade: opacity 0.15s cubic-bezier(0.23, 1, 0.32, 1) !default;
+
+// Mismo motivo que $transition-fade de arriba: Bootstrap anima el Collapse
+// del Accordion (FAQ de Ayuda) con `height .35s ease` por defecto -- `ease`
+// nativo de CSS es justo la curva que este proyecto evita a propósito (se
+// siente débil, ver DESIGN.md). El acordeón es la única entrada/salida de la
+// app que corre por Collapse en vez de Fade, así que antes se quedaba con la
+// única transición del sistema en la curva por defecto sin que nadie lo notara.
+$transition-collapse: height 0.3s cubic-bezier(0.23, 1, 0.32, 1) !default;
+
+@import "bootstrap/scss/variables";
+@import "bootstrap/scss/variables-dark";
+@import "bootstrap/scss/maps";
+@import "bootstrap/scss/mixins";
+@import "bootstrap/scss/root";
+
+@import "bootstrap/scss/transitions";
+@import "bootstrap/scss/close";
+@import "bootstrap/scss/spinners";
+@import "bootstrap/scss/progress";
+@import "bootstrap/scss/toasts";
+@import "bootstrap/scss/accordion";
+@import "bootstrap/scss/tooltip";
+@import "bootstrap/scss/placeholders";
